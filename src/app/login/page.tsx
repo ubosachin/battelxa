@@ -30,12 +30,21 @@ function GoogleIcon() {
   );
 }
 
+function DiscordIcon() {
+  return (
+    <svg className="w-5 h-5 shrink-0" viewBox="0 0 127.14 96.36" fill="currentColor">
+      <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.91,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.91,96.12,53,91.08,65.69,84.69,65.69Z" />
+    </svg>
+  );
+}
+
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState<"google" | "discord" | null>(null);
   const [error, setError] = useState("");
   const [showDevModal, setShowDevModal] = useState(false);
+  const [devProvider, setDevProvider] = useState<"google" | "discord">("google");
   const [devEmail, setDevEmail] = useState("");
   const [devName, setDevName] = useState("");
 
@@ -44,44 +53,70 @@ function LoginFormContent() {
     if (errParam) {
       queueMicrotask(() => {
         if (errParam === "google_not_configured") {
+          setDevProvider("google");
+          setShowDevModal(true);
+        } else if (errParam === "discord_not_configured") {
+          setDevProvider("discord");
           setShowDevModal(true);
         } else if (errParam === "account_suspended") {
           setError("Your account has been suspended or banned. Please contact support.");
+        } else if (errParam === "access_denied") {
+          setError("Access was canceled or denied by the provider.");
         } else {
-          setError("Google authentication failed. Please try again.");
+          setError("Authentication failed. Please try again.");
         }
       });
     }
   }, [searchParams]);
 
   const handleGoogleLogin = () => {
-    setIsLoading(true);
+    setLoadingProvider("google");
     setError("");
     window.location.href = "/api/auth/google";
   };
 
-  const handleDevGoogleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!devEmail.trim()) return;
+  const handleDiscordLogin = () => {
+    setLoadingProvider("discord");
+    setError("");
+    window.location.href = "/api/auth/discord";
+  };
 
-    setIsLoading(true);
+  const handleDevLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!devEmail.trim() && !devName.trim()) return;
+
+    setLoadingProvider(devProvider);
     setError("");
 
     try {
-      const res = await fetch("/api/auth/google/verify", {
+      const endpoint =
+        devProvider === "google"
+          ? "/api/auth/google/verify"
+          : "/api/auth/discord/verify";
+
+      const payload =
+        devProvider === "google"
+          ? {
+              email: devEmail.trim(),
+              name: devName.trim() || devEmail.split("@")[0],
+              googleId: `dev_google_${Date.now()}`,
+            }
+          : {
+              email: devEmail.trim() || undefined,
+              username: devName.trim() || (devEmail ? devEmail.split("@")[0] : "DiscordPlayer"),
+              discordId: `dev_discord_${Date.now()}`,
+            };
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: devEmail.trim(),
-          name: devName.trim() || devEmail.split("@")[0],
-          googleId: `dev_google_${Date.now()}`,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Google sign-in failed");
-        setIsLoading(false);
+        setError(data.error || `${devProvider === "google" ? "Google" : "Discord"} sign-in failed`);
+        setLoadingProvider(null);
         return;
       }
 
@@ -89,7 +124,7 @@ function LoginFormContent() {
       router.refresh();
     } catch {
       setError("Failed to sign in. Please try again.");
-      setIsLoading(false);
+      setLoadingProvider(null);
     }
   };
 
@@ -103,7 +138,7 @@ function LoginFormContent() {
       <div className="w-full max-w-[440px] relative z-10 space-y-4">
         <div className="rounded-2xl bg-[#0e111a]/95 backdrop-blur-xl border border-white/[0.1] p-5 sm:p-7 shadow-2xl shadow-black/90 space-y-5 relative overflow-hidden">
           {/* Top highlight bar */}
-          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-violet-600 via-lime-400 to-indigo-600" />
+          <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-violet-600 via-lime-400 to-[#5865F2]" />
 
           {/* Brand Header Inside Container */}
           <div className="flex flex-col items-center text-center space-y-2.5 pt-1">
@@ -129,22 +164,22 @@ function LoginFormContent() {
                 Sign In to Arena
               </h1>
               <p className="text-xs text-zinc-400 max-w-[340px] mx-auto leading-relaxed text-balance">
-                Instant Google access to match lobbies, room credentials & automated payouts.
+                Instant Google & Discord access to match lobbies, room credentials & automated payouts.
               </p>
             </div>
           </div>
 
           {error && <Alert variant="error">{error}</Alert>}
 
-          {/* Primary Action: Continue with Google */}
+          {/* Primary Action Buttons: Google & Discord */}
           <div className="space-y-3 pt-0.5">
             <button
               type="button"
               onClick={handleGoogleLogin}
-              disabled={isLoading}
+              disabled={loadingProvider !== null}
               className="w-full flex items-center justify-center gap-2.5 sm:gap-3 py-3 sm:py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 active:scale-[0.99] text-zinc-950 font-black text-xs xs:text-sm sm:text-base shadow-xl shadow-white/5 transition-all duration-200 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed border border-white"
             >
-              {isLoading ? (
+              {loadingProvider === "google" ? (
                 <>
                   <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-zinc-700 shrink-0" />
                   <span>Connecting with Google...</span>
@@ -157,7 +192,26 @@ function LoginFormContent() {
               )}
             </button>
 
-            <p className="text-[10px] xs:text-[11px] text-zinc-500 text-center leading-normal text-balance px-1">
+            <button
+              type="button"
+              onClick={handleDiscordLogin}
+              disabled={loadingProvider !== null}
+              className="w-full flex items-center justify-center gap-2.5 sm:gap-3 py-3 sm:py-3.5 px-4 rounded-xl bg-[#5865F2] hover:bg-[#4752c4] active:scale-[0.99] text-white font-black text-xs xs:text-sm sm:text-base shadow-xl shadow-[#5865F2]/25 transition-all duration-200 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed border border-[#6b77f5]"
+            >
+              {loadingProvider === "discord" ? (
+                <>
+                  <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-white shrink-0" />
+                  <span>Connecting with Discord...</span>
+                </>
+              ) : (
+                <>
+                  <DiscordIcon />
+                  <span>Continue with Discord</span>
+                </>
+              )}
+            </button>
+
+            <p className="text-[10px] xs:text-[11px] text-zinc-500 text-center leading-normal text-balance px-1 pt-1">
               By continuing, you agree to BATTLEXA&apos;s{" "}
               <Link href="/terms" className="text-zinc-400 underline hover:text-white transition-colors">
                 Terms of Service
@@ -177,7 +231,7 @@ function LoginFormContent() {
                 <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-lime-400" />
               </div>
               <span className="text-[11px] sm:text-xs text-zinc-300 font-medium leading-snug">
-                Instant wallet creation & zero manual forms
+                Instant wallet creation & ₹50 welcome bonus
               </span>
             </div>
 
@@ -204,19 +258,50 @@ function LoginFormContent() {
         {/* Developer / Local Environment Fallback Dialog */}
         {showDevModal && (
           <div className="rounded-2xl bg-amber-950/30 border border-amber-500/40 p-4 sm:p-5 space-y-3 shadow-xl backdrop-blur-md">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase text-amber-400">
-              <Trophy className="h-4 w-4" /> Local Dev Google Sign-In
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase text-amber-400">
+                <Trophy className="h-4 w-4" /> Local Dev Fast Sign-In
+              </div>
+              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-lg border border-amber-500/20">
+                <button
+                  type="button"
+                  onClick={() => setDevProvider("google")}
+                  className={`text-[10px] px-2 py-0.5 rounded font-bold transition ${
+                    devProvider === "google"
+                      ? "bg-amber-400 text-black"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  Google
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDevProvider("discord")}
+                  className={`text-[10px] px-2 py-0.5 rounded font-bold transition ${
+                    devProvider === "discord"
+                      ? "bg-[#5865F2] text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  Discord
+                </button>
+              </div>
             </div>
+
             <p className="text-xs text-zinc-300 leading-relaxed">
-              <code className="text-amber-300 font-mono text-[11px]">GOOGLE_CLIENT_ID</code> is not yet configured in <code className="text-zinc-300 font-mono text-[11px]">.env.local</code>. Enter your Google email below to sign in immediately:
+              <code className="text-amber-300 font-mono text-[11px]">
+                {devProvider === "google" ? "GOOGLE_CLIENT_ID" : "DISCORD_CLIENT_ID"}
+              </code>{" "}
+              is not yet configured in <code className="text-zinc-300 font-mono text-[11px]">.env.local</code>. Enter details below to simulate instant {devProvider === "google" ? "Google" : "Discord"} login:
             </p>
-            <form onSubmit={handleDevGoogleLogin} className="space-y-2.5 pt-1">
+
+            <form onSubmit={handleDevLogin} className="space-y-2.5 pt-1">
               <input
                 type="email"
-                placeholder="your.email@gmail.com"
+                placeholder={devProvider === "google" ? "your.email@gmail.com" : "discord.user@example.com"}
                 value={devEmail}
                 onChange={(e) => setDevEmail(e.target.value)}
-                required
+                required={devProvider === "google"}
                 className="w-full px-3.5 py-2 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
               />
               <input
@@ -230,10 +315,14 @@ function LoginFormContent() {
                 type="submit"
                 variant="primary"
                 size="sm"
-                className="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs py-2.5"
-                isLoading={isLoading}
+                className={`w-full font-bold text-xs py-2.5 ${
+                  devProvider === "google"
+                    ? "bg-amber-500 hover:bg-amber-400 text-black"
+                    : "bg-[#5865F2] hover:bg-[#4752c4] text-white"
+                }`}
+                isLoading={loadingProvider !== null}
               >
-                Sign In with Google Account <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                Sign In with {devProvider === "google" ? "Google" : "Discord"} <ArrowRight className="h-3.5 w-3.5 ml-1" />
               </Button>
             </form>
           </div>

@@ -4,6 +4,7 @@ export interface IUser extends Document {
   email: string;
   passwordHash?: string;
   googleId?: string;
+  discordId?: string;
   username: string;
   role: "PLAYER" | "ORGANIZER" | "ADMIN";
   avatar?: string;
@@ -25,6 +26,11 @@ const UserSchema = new Schema<IUser>(
       index: true,
     },
     googleId: {
+      type: String,
+      sparse: true,
+      index: true,
+    },
+    discordId: {
       type: String,
       sparse: true,
       index: true,
