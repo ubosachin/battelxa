@@ -14,8 +14,18 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+interface AdminStats {
+  totalUsers: number;
+  totalTournaments: number;
+  activeTournaments: number;
+  pendingOrganizers: number;
+  pendingPayouts: number;
+  pendingDisputes: number;
+  totalVolume: number;
+}
+
 export default function AdminDashboardPage() {
-  const [stats, setStats] = useState<any>({
+  const [stats, setStats] = useState<AdminStats>({
     totalUsers: 240,
     totalTournaments: 48,
     activeTournaments: 6,
@@ -24,7 +34,6 @@ export default function AdminDashboardPage() {
     pendingDisputes: 1,
     totalVolume: 350000,
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function loadStats() {

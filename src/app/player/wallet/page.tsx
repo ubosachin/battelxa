@@ -19,10 +19,39 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+interface WalletData {
+  balance: number;
+  lockedBalance: number;
+  totalDeposited?: number;
+  totalWon?: number;
+  totalWithdrawn?: number;
+  currency?: string;
+}
+
+interface WalletTxItem {
+  _id: string;
+  type: string;
+  amount: number;
+  balanceAfter?: number;
+  description: string;
+  status: string;
+  createdAt: string;
+}
+
+interface PayoutRequestItem {
+  _id: string;
+  amount: number;
+  status: string;
+  payoutMethod: string;
+  beneficiaryUpi?: string;
+  requestedAt?: string;
+  createdAt?: string;
+}
+
 export default function PlayerWalletPage() {
-  const [wallet, setWallet] = useState<any>(null);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [payoutRequests, setPayoutRequests] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [transactions, setTransactions] = useState<WalletTxItem[]>([]);
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequestItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Top Up Modal
@@ -44,26 +73,32 @@ export default function PlayerWalletPage() {
   const [withdrawError, setWithdrawError] = useState("");
   const [withdrawSuccess, setWithdrawSuccess] = useState("");
 
-  const fetchWallet = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/wallet");
-      if (res.ok) {
-        const data = await res.json();
-        setWallet(data.wallet);
-        setTransactions(data.transactions || []);
-        setPayoutRequests(data.payoutRequests || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchWallet();
-  }, []);
+    let isMounted = true;
+    async function loadWallet() {
+      try {
+        const res = await fetch("/api/wallet");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setWallet(data.wallet);
+          setTransactions(data.transactions || []);
+          setPayoutRequests(data.payoutRequests || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadWallet();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +154,7 @@ export default function PlayerWalletPage() {
       setTimeout(() => {
         setIsDepositOpen(false);
         setDepositSuccess("");
-        fetchWallet();
+        setRefreshIndex((prev) => prev + 1);
       }, 1500);
     } catch {
       setDepositError("Network error during checkout");
@@ -171,7 +206,7 @@ export default function PlayerWalletPage() {
       setTimeout(() => {
         setIsWithdrawOpen(false);
         setWithdrawSuccess("");
-        fetchWallet();
+        setRefreshIndex((prev) => prev + 1);
       }, 1500);
     } catch {
       setWithdrawError("Network error");
@@ -193,7 +228,7 @@ export default function PlayerWalletPage() {
         </div>
 
         <button
-          onClick={fetchWallet}
+          onClick={() => setRefreshIndex((prev) => prev + 1)}
           className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
         >
           <RefreshCw className="h-3.5 w-3.5" /> Refresh ledger
@@ -283,7 +318,7 @@ export default function PlayerWalletPage() {
                     {formatCurrency(p.amount)} via {p.payoutMethod}
                   </span>
                   <span className="text-[11px] text-zinc-500">
-                    Requested on {formatDate(p.requestedAt)}
+                    Requested on {formatDate(p.requestedAt || p.createdAt || new Date())}
                   </span>
                 </div>
 
@@ -366,7 +401,7 @@ export default function PlayerWalletPage() {
                       </td>
 
                       <td className="py-3.5 px-4 font-mono text-zinc-400">
-                        {formatCurrency(tx.balanceAfter)}
+                        {tx.balanceAfter !== undefined ? formatCurrency(tx.balanceAfter) : "—"}
                       </td>
 
                       <td className="py-3.5 px-4">

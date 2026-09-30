@@ -25,20 +25,19 @@ export function PwaInstallPrompt() {
         (window.navigator as unknown as { standalone: boolean }).standalone ===
           true);
 
-    setIsStandalone(isStandaloneMode);
-
-    if (isStandaloneMode) return;
-
-    // Check dismissal status in session
-    const dismissed = sessionStorage.getItem("battlexa_pwa_dismissed");
-    if (!dismissed) {
-      setIsDismissed(false);
-    }
-
-    // Detect iOS
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const iosDevice = /iphone|ipad|ipod/.test(userAgent);
-    setIsIOS(iosDevice);
+    queueMicrotask(() => {
+      if (isStandaloneMode) {
+        setIsStandalone(true);
+        return;
+      }
+      const dismissed = sessionStorage.getItem("battlexa_pwa_dismissed");
+      if (!dismissed) {
+        setIsDismissed(false);
+      }
+      const userAgent = window.navigator.userAgent.toLowerCase();
+      const iosDevice = /iphone|ipad|ipod/.test(userAgent);
+      setIsIOS(iosDevice);
+    });
 
     // Listen for Chrome/Android install event
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -151,7 +150,7 @@ export function PwaInstallPrompt() {
                 </div>
                 <span>
                   Tap the <strong className="text-white">Share</strong> button{" "}
-                  <Share2 className="w-3.5 h-3.5 inline text-sky-400 mx-0.5" /> in Safari's bottom toolbar.
+                  <Share2 className="w-3.5 h-3.5 inline text-sky-400 mx-0.5" /> in Safari&apos;s bottom toolbar.
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -159,7 +158,7 @@ export function PwaInstallPrompt() {
                   2
                 </div>
                 <span>
-                  Scroll down and tap <strong className="text-white">"Add to Home Screen"</strong>.
+                  Scroll down and tap <strong className="text-white">&quot;Add to Home Screen&quot;</strong>.
                 </span>
               </div>
               <div className="flex items-center gap-3">

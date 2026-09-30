@@ -18,8 +18,32 @@ import {
   Users,
 } from "lucide-react";
 
+interface DashboardData {
+  user?: {
+    username?: string;
+    email?: string;
+    role?: string;
+  };
+  profile?: {
+    gamerTag?: string;
+    freeFireId?: string;
+    bgmiId?: string;
+    matchesPlayed?: number;
+    matchesWon?: number;
+    totalKills?: number;
+    earnings?: number;
+    rankTitle?: string;
+  };
+  wallet?: {
+    balance: number;
+    lockedBalance: number;
+    totalWon?: number;
+  };
+  transactions?: unknown[];
+}
+
 export default function PlayerDashboard() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -142,7 +166,7 @@ export default function PlayerDashboard() {
             {profile.matchesPlayed || 0}
           </div>
           <div className="text-[11px] text-zinc-500">
-            Win rate: {profile.matchesPlayed ? Math.round((profile.matchesWon / profile.matchesPlayed) * 100) : 0}%
+            Win rate: {profile.matchesPlayed ? Math.round(((profile.matchesWon || 0) / profile.matchesPlayed) * 100) : 0}%
           </div>
         </div>
 
@@ -156,7 +180,7 @@ export default function PlayerDashboard() {
             {profile.totalKills || 0}
           </div>
           <div className="text-[11px] text-zinc-500">
-            Average K/D: {profile.matchesPlayed ? (profile.totalKills / profile.matchesPlayed).toFixed(1) : 0}
+            Average K/D: {profile.matchesPlayed ? ((profile.totalKills || 0) / profile.matchesPlayed).toFixed(1) : 0}
           </div>
         </div>
       </div>

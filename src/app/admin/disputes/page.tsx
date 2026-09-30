@@ -3,32 +3,45 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { Alert } from "@/components/ui/Alert";
 import { formatDate } from "@/lib/utils";
-import { AlertTriangle, Check, ExternalLink, Shield } from "lucide-react";
+import { Check, ExternalLink } from "lucide-react";
+
+interface DisputeItem {
+  _id: string;
+  status: string;
+  createdAt: string;
+  reason: string;
+  evidenceUrls?: string[];
+}
 
 export default function AdminDisputesPage() {
-  const [disputes, setDisputes] = useState<any[]>([]);
+  const [disputes, setDisputes] = useState<DisputeItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchDisputes = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/admin/disputes");
-      if (res.ok) {
-        const data = await res.json();
-        setDisputes(data.disputes || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchDisputes();
-  }, []);
+    let isMounted = true;
+    async function loadDisputes() {
+      try {
+        const res = await fetch("/api/admin/disputes");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setDisputes(data.disputes || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadDisputes();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleResolve = async (id: string, status: "RESOLVED" | "REJECTED") => {
     try {
@@ -39,7 +52,7 @@ export default function AdminDisputesPage() {
       });
 
       if (res.ok) {
-        fetchDisputes();
+        setRefreshIndex((prev) => prev + 1);
       }
     } catch (e) {
       console.error(e);

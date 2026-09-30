@@ -7,8 +7,31 @@ import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import { Trophy, Clock, Lock, ExternalLink, Calendar } from "lucide-react";
 
+interface TournamentInfo {
+  _id: string;
+  title: string;
+  gameSlug: string;
+  gameName?: string;
+  startTime: string;
+  roomReleaseTime?: string;
+  format: string;
+  status: string;
+  prizePool: number;
+}
+
+interface PlayerRegistration {
+  _id: string;
+  tournamentId: TournamentInfo;
+  slotNumber: number;
+  inGameId?: string;
+  gamerTag?: string;
+  status: string;
+  registeredAt?: string;
+  createdAt: string;
+}
+
 export default function PlayerTournamentsPage() {
-  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [registrations, setRegistrations] = useState<PlayerRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,7 +80,7 @@ export default function PlayerTournamentsPage() {
           </div>
           <h3 className="font-bold text-white text-base">No Active Registrations</h3>
           <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-            You haven't joined any tournament cups yet. Pick a Free Fire MAX or BGMI battleground to get started!
+            You haven&apos;t joined any tournament cups yet. Pick a Free Fire MAX or BGMI battleground to get started!
           </p>
           <Link href="/tournaments">
             <Button variant="lime" size="sm">
@@ -108,7 +131,7 @@ export default function PlayerTournamentsPage() {
 
                 <div className="pt-1 flex items-center justify-between">
                   <span className="text-[11px] text-zinc-400">
-                    Registered: {formatDate(reg.registeredAt)}
+                    Registered: {formatDate(reg.registeredAt || reg.createdAt)}
                   </span>
                   <Link href={`/tournaments/${t._id || reg.tournamentId}`}>
                     <Button size="sm" variant="secondary">

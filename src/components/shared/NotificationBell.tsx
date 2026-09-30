@@ -34,9 +34,26 @@ export function NotificationBell() {
   };
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
+    let isMounted = true;
+    async function load() {
+      try {
+        const res = await fetch("/api/notifications");
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          setNotifications(data.notifications || []);
+          setUnreadCount(data.unreadCount || 0);
+        }
+      } catch {
+        // ignore in offline/unauth mode
+      }
+    }
+
+    load();
+    const interval = setInterval(load, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const markAllRead = async () => {

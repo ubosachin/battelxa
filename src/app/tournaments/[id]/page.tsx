@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { RoomCredentialsCard } from "@/components/tournament/RoomCredentialsCard";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -13,10 +12,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import {
   Trophy,
   Users,
-  Clock,
   ShieldCheck,
-  Gamepad2,
-  Calendar,
   AlertTriangle,
   ArrowLeft,
   CheckCircle2,
@@ -25,16 +21,68 @@ import {
 import confetti from "canvas-confetti";
 import { GameLogo } from "@/components/shared/GameLogo";
 
+interface PrizeItem {
+  rank: number;
+  amount: number;
+  percentage?: number;
+}
+
+interface TournamentDetail {
+  _id: string;
+  title: string;
+  description?: string;
+  gameSlug: string;
+  gameName?: string;
+  format: string;
+  type: string;
+  entryFee: number;
+  prizePool: number;
+  maxSlots: number;
+  registeredSlots: number;
+  startTime: string;
+  registrationDeadline: string;
+  status: string;
+  rules?: string;
+  streamUrl?: string;
+  region?: string;
+  firstPlacePrize?: number;
+  killPrize?: number;
+  bannerUrl?: string;
+  roomReleaseTime?: string;
+  roomId?: string;
+  roomPassword?: string;
+  prizeBreakdown?: PrizeItem[];
+  organizerId?: {
+    username?: string;
+    organizationName?: string;
+  };
+  roomCredentials?: {
+    roomId?: string;
+    password?: string;
+    notes?: string;
+    releaseTime?: string;
+  };
+}
+
+interface RegistrationItem {
+  _id: string;
+  slotNumber: number;
+  gamerTag?: string;
+  inGameId?: string;
+  teamName?: string;
+  status: string;
+  members?: Array<{ gamerTag?: string; inGameId?: string }>;
+}
+
 export default function TournamentDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const router = useRouter();
 
-  const [tournament, setTournament] = useState<any>(null);
-  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [tournament, setTournament] = useState<TournamentDetail | null>(null);
+  const [registrations, setRegistrations] = useState<RegistrationItem[]>([]);
   const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [userSlotNumber, setUserSlotNumber] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -47,27 +95,33 @@ export default function TournamentDetailPage({
   const [joinError, setJoinError] = useState<string>("");
   const [joinSuccess, setJoinSuccess] = useState<string>("");
 
-  const fetchTournamentData = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`/api/tournaments/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setTournament(data.tournament);
-        setRegistrations(data.registrations || []);
-        setIsRegistered(data.isUserRegistered);
-        setUserSlotNumber(data.userSlotNumber);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchTournamentData();
-  }, [id]);
+    let isMounted = true;
+    async function loadTournamentData() {
+      try {
+        const res = await fetch(`/api/tournaments/${id}`);
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setTournament(data.tournament);
+          setRegistrations(data.registrations || []);
+          setIsRegistered(data.isUserRegistered);
+          setUserSlotNumber(data.userSlotNumber);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadTournamentData();
+    return () => {
+      isMounted = false;
+    };
+  }, [id, refreshIndex]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +164,7 @@ export default function TournamentDetailPage({
 
       setTimeout(() => {
         setIsJoinModalOpen(false);
-        fetchTournamentData();
+        setRefreshIndex((prev) => prev + 1);
       }, 1500);
     } catch {
       setJoinError("Network error. Please try again.");
@@ -339,7 +393,7 @@ export default function TournamentDetailPage({
 
             <div className="space-y-2">
               {tournament.prizeBreakdown && tournament.prizeBreakdown.length > 0 ? (
-                tournament.prizeBreakdown.map((p: any) => (
+                tournament.prizeBreakdown.map((p: PrizeItem) => (
                   <div
                     key={p.rank}
                     className="flex items-center justify-between p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 text-xs"
@@ -469,7 +523,7 @@ export default function TournamentDetailPage({
             {isFree ? "Free Entry" : `₹${tournament.entryFee} Entry`}
           </span>
           <div className="text-sm font-extrabold text-lime-400">
-            ₹{tournament.prizePool.total.toLocaleString()} Pool
+            ₹{(tournament.prizePool || 0).toLocaleString()} Pool
           </div>
         </div>
 

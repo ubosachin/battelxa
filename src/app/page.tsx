@@ -43,7 +43,22 @@ async function getHomePageData(): Promise<{ tournaments: TournamentCardData[]; t
       Tournament.countDocuments({ status: { $ne: "CANCELLED" } }),
     ]);
 
-    const serializedTournaments: TournamentCardData[] = tournaments.map((t: any) => ({
+    const serializedTournaments: TournamentCardData[] = (tournaments as unknown as Array<{
+      _id: { toString(): string };
+      title: string;
+      gameSlug: string;
+      gameName?: string;
+      format: "SOLO" | "DUO" | "SQUAD";
+      type: "FREE" | "PAID" | "PRACTICE";
+      entryFee: number;
+      prizePool: number;
+      maxSlots: number;
+      registeredSlots: number;
+      startTime: Date | string;
+      status: string;
+      organizerId?: { organizationName?: string; username?: string };
+      isFeatured?: boolean;
+    }>).map((t) => ({
       _id: t._id.toString(),
       title: t.title,
       gameSlug: t.gameSlug,
@@ -51,7 +66,7 @@ async function getHomePageData(): Promise<{ tournaments: TournamentCardData[]; t
         t.gameName ||
         (t.gameSlug === "free-fire-max" ? "Free Fire MAX" : "BGMI"),
       format: t.format,
-      type: t.type,
+      type: t.type as "FREE" | "PAID" | "PRACTICE",
       entryFee: t.entryFee,
       prizePool: t.prizePool,
       maxSlots: t.maxSlots,
@@ -457,7 +472,7 @@ export default async function HomePage() {
             Ready to Prove Your Squad is #1?
           </h3>
           <p className="text-xs sm:text-sm text-zinc-300 max-w-xl mx-auto">
-            Join thousands of daily players on India's premier esports tournament battleground. Sign up now and claim your ₹50 arena welcome bonus!
+            Join thousands of daily players on India&apos;s premier esports tournament battleground. Sign up now and claim your ₹50 arena welcome bonus!
           </p>
           <div className="flex justify-center gap-3 pt-2">
             <Link href="/register">

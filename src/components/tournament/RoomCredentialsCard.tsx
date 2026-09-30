@@ -26,8 +26,28 @@ export function RoomCredentialsCard({
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const fetchCredentials = React.useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/tournaments/${tournamentId}/room-credentials`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.roomId) {
+          setRoomId(data.roomId);
+          setPassword(data.password || "");
+          setIsUnlocked(true);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tournamentId]);
+
   useEffect(() => {
     const target = new Date(releaseTime).getTime();
+    if (isNaN(target)) return;
 
     const updateTimer = () => {
       const now = new Date().getTime();
@@ -51,26 +71,7 @@ export function RoomCredentialsCard({
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [releaseTime, isRegistered, isUnlocked]);
-
-  const fetchCredentials = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`/api/tournaments/${tournamentId}/room-credentials`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.roomId) {
-          setRoomId(data.roomId);
-          setPassword(data.password || "");
-          setIsUnlocked(true);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [releaseTime, isRegistered, isUnlocked, fetchCredentials]);
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);

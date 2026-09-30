@@ -7,36 +7,65 @@ import { Alert } from "@/components/ui/Alert";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Wallet, Check, X, ShieldAlert } from "lucide-react";
+import { Check, X } from "lucide-react";
+
+interface AdminPayoutDetails {
+  upiId?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
+}
+
+interface AdminPayoutUser {
+  username?: string;
+  email?: string;
+}
+
+interface AdminPayoutItem {
+  _id: string;
+  amount: number;
+  role?: string;
+  status: string;
+  payoutMethod: string;
+  payoutDetails?: AdminPayoutDetails;
+  requestedAt: string;
+  userId?: AdminPayoutUser;
+}
 
 export default function AdminPayoutsPage() {
-  const [payouts, setPayouts] = useState<any[]>([]);
+  const [payouts, setPayouts] = useState<AdminPayoutItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPayout, setSelectedPayout] = useState<any>(null);
+  const [selectedPayout, setSelectedPayout] = useState<AdminPayoutItem | null>(null);
   const [actionType, setActionType] = useState<"PROCESSED" | "REJECTED">("PROCESSED");
   const [transactionRef, setTransactionRef] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const fetchPayouts = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/admin/payouts");
-      if (res.ok) {
-        const data = await res.json();
-        setPayouts(data.payouts || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchPayouts();
-  }, []);
+    let isMounted = true;
+    async function loadPayouts() {
+      try {
+        const res = await fetch("/api/admin/payouts");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setPayouts(data.payouts || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadPayouts();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleActionConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +93,7 @@ export default function AdminPayoutsPage() {
       setSelectedPayout(null);
       setTransactionRef("");
       setAdminNotes("");
-      fetchPayouts();
+      setRefreshIndex((prev) => prev + 1);
     } catch {
       setMessage({ type: "error", text: "Network error processing payout" });
     } finally {

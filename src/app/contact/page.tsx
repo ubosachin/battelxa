@@ -12,9 +12,11 @@ export default function ContactPage() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isSent, setIsSent] = useState(false);
+  const [ticketRef, setTicketRef] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setTicketRef(`BX-${Date.now().toString().slice(-6)}`);
     setIsSent(true);
     setName("");
     setEmail("");
@@ -63,7 +65,7 @@ export default function ContactPage() {
         <div className="md:col-span-2 rounded-2xl bg-[#0e111a] border border-white/[0.08] p-6 lg:p-8">
           {isSent ? (
             <Alert variant="success" title="Message Dispatched!">
-              Your inquiry has been logged with ticket reference #BX-{Date.now().toString().slice(-6)}. Our referee desk will respond to your email shortly.
+              Your inquiry has been logged with ticket reference #{ticketRef || "BX-202601"}. Our referee desk will respond to your email shortly.
             </Alert>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

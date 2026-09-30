@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Types } from "mongoose";
 import { requireAuth } from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/db/connect";
 import { Team, PlayerProfile } from "@/lib/db/models";
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     const inGameName = profile?.gamerTag || session.username;
 
     team.members.push({
-      userId: session.id as any,
+      userId: new Types.ObjectId(session.id),
       role: "MEMBER",
       inGameName,
       inGameId,

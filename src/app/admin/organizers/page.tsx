@@ -4,31 +4,47 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
-import { ShieldCheck, Check, X, ShieldAlert, Phone, Globe } from "lucide-react";
+import { Check, X, Phone, Globe } from "lucide-react";
+
+interface OrganizerItem {
+  _id: string;
+  organizationName: string;
+  status: string;
+  description?: string;
+  phone?: string;
+  website?: string;
+  upiId?: string;
+}
 
 export default function AdminOrganizersPage() {
-  const [organizers, setOrganizers] = useState<any[]>([]);
+  const [organizers, setOrganizers] = useState<OrganizerItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
-  const fetchOrganizers = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/admin/organizers");
-      if (res.ok) {
-        const data = await res.json();
-        setOrganizers(data.organizers || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchOrganizers();
-  }, []);
+    let isMounted = true;
+    async function loadOrganizers() {
+      try {
+        const res = await fetch("/api/admin/organizers");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setOrganizers(data.organizers || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadOrganizers();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleUpdateStatus = async (id: string, status: "APPROVED" | "REJECTED" | "SUSPENDED") => {
     try {
@@ -40,7 +56,7 @@ export default function AdminOrganizersPage() {
 
       if (res.ok) {
         setActionMessage(`Organizer status changed to ${status}`);
-        fetchOrganizers();
+        setRefreshIndex((prev) => prev + 1);
         setTimeout(() => setActionMessage(null), 3000);
       }
     } catch (e) {

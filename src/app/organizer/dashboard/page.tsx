@@ -16,8 +16,22 @@ import {
   Calendar,
 } from "lucide-react";
 
+interface OrganizerTournamentItem {
+  _id: string;
+  title: string;
+  gameSlug: string;
+  gameName: string;
+  format: string;
+  status: string;
+  entryFee: number;
+  prizePool: number;
+  maxSlots: number;
+  registeredSlots: number;
+  startTime: string;
+}
+
 export default function OrganizerDashboard() {
-  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [tournaments, setTournaments] = useState<OrganizerTournamentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -112,7 +126,7 @@ export default function OrganizerDashboard() {
           <div className="py-12 text-center text-xs text-zinc-400">Loading tournaments...</div>
         ) : tournaments.length === 0 ? (
           <div className="py-10 text-center text-xs text-zinc-500">
-            No tournaments created yet. Click "Create New Tournament" above.
+            No tournaments created yet. Click &quot;Create New Tournament&quot; above.
           </div>
         ) : (
           <div className="divide-y divide-zinc-800/80">

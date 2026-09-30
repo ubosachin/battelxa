@@ -18,10 +18,10 @@ export default function CreateTournamentPage() {
   const [entryFee, setEntryFee] = useState("50");
   const [prizePool, setPrizePool] = useState("2000");
   const [maxSlots, setMaxSlots] = useState("12");
-  const [startTime, setStartTime] = useState(
+  const [startTime, setStartTime] = useState(() =>
     new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
-  const [registrationDeadline, setRegistrationDeadline] = useState(
+  const [registrationDeadline, setRegistrationDeadline] = useState(() =>
     new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().slice(0, 16)
   );
   const [rules, setRules] = useState(
@@ -200,7 +200,7 @@ export default function CreateTournamentPage() {
             </label>
             <select
               value={type}
-              onChange={(e: any) => setType(e.target.value)}
+              onChange={(e) => setType(e.target.value as "FREE" | "PAID" | "PRACTICE")}
               className="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-violet-500"
             >
               <option value="PAID">Cash Entry (Paid)</option>

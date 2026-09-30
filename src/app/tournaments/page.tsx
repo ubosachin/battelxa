@@ -44,8 +44,32 @@ export default function TournamentsDiscoveryPage() {
   };
 
   useEffect(() => {
-    // Initial fetch
-    fetchTournaments(filters);
+    let isMounted = true;
+    async function load() {
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams();
+        if (filters.game !== "all") params.append("game", filters.game);
+        if (filters.format !== "all") params.append("format", filters.format);
+        if (filters.type !== "all") params.append("type", filters.type);
+        if (filters.status !== "all") params.append("status", filters.status);
+        if (filters.sortBy) params.append("sortBy", filters.sortBy);
+
+        const res = await fetch(`/api/tournaments?${params.toString()}`);
+        if (res.ok && isMounted) {
+          const data = await res.json();
+          setTournaments(data.tournaments || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    load();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleFilterChange = (newFilters: FilterState) => {

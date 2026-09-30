@@ -6,8 +6,16 @@ import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { User, Shield, Gamepad2, Save, CheckCircle2 } from "lucide-react";
 
+interface ProfileUser {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  avatar?: string;
+}
+
 export default function PlayerProfilePage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<ProfileUser | null>(null);
   const [gamerTag, setGamerTag] = useState("");
   const [freeFireId, setFreeFireId] = useState("");
   const [bgmiId, setBgmiId] = useState("");

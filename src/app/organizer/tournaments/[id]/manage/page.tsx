@@ -19,6 +19,38 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+interface RegistrationMember {
+  userId?: string;
+  gamerTag?: string;
+  inGameId?: string;
+  inGameName?: string;
+}
+
+interface ManageRegistration {
+  _id: string;
+  slotNumber: number;
+  teamName?: string;
+  status: string;
+  members?: RegistrationMember[];
+}
+
+interface ManageTournament {
+  _id: string;
+  title: string;
+  gameName: string;
+  slug?: string;
+  status: string;
+  startTime: string;
+  registeredSlots: number;
+  maxSlots: number;
+  roomCredentials?: {
+    roomId?: string;
+    password?: string;
+    notes?: string;
+    releaseTime?: string;
+  };
+}
+
 export default function OrganizerManageTournamentPage({
   params,
 }: {
@@ -26,8 +58,8 @@ export default function OrganizerManageTournamentPage({
 }) {
   const { id } = use(params);
 
-  const [tournament, setTournament] = useState<any>(null);
-  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [tournament, setTournament] = useState<ManageTournament | null>(null);
+  const [registrations, setRegistrations] = useState<ManageRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Room Credentials State
@@ -40,30 +72,36 @@ export default function OrganizerManageTournamentPage({
   // Status transition state
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  const fetchTournament = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`/api/tournaments/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        setTournament(data.tournament);
-        setRegistrations(data.registrations || []);
-        if (data.tournament.roomCredentials) {
-          setRoomId(data.tournament.roomCredentials.roomId || "");
-          setPassword(data.tournament.roomCredentials.password || "");
-          setNotes(data.tournament.roomCredentials.notes || "");
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchTournament();
-  }, [id]);
+    let isMounted = true;
+    async function loadTournament() {
+      try {
+        const res = await fetch(`/api/tournaments/${id}`);
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setTournament(data.tournament);
+          setRegistrations(data.registrations || []);
+          if (data.tournament?.roomCredentials) {
+            setRoomId(data.tournament.roomCredentials.roomId || "");
+            setPassword(data.tournament.roomCredentials.password || "");
+            setNotes(data.tournament.roomCredentials.notes || "");
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadTournament();
+    return () => {
+      isMounted = false;
+    };
+  }, [id, refreshIndex]);
 
   const handleSaveCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +124,7 @@ export default function OrganizerManageTournamentPage({
 
       if (res.ok) {
         setCredsMessage({ type: "success", text: "Room credentials saved successfully!" });
-        fetchTournament();
+        setRefreshIndex((prev) => prev + 1);
       } else {
         const err = await res.json();
         setCredsMessage({ type: "error", text: err.error || "Failed to save room credentials" });
@@ -108,7 +146,7 @@ export default function OrganizerManageTournamentPage({
       });
 
       if (res.ok) {
-        fetchTournament();
+        setRefreshIndex((prev) => prev + 1);
       } else {
         const err = await res.json();
         alert(err.error || "Status update failed");
@@ -135,7 +173,7 @@ export default function OrganizerManageTournamentPage({
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `roster-${tournament.slug || "tournament"}.csv`;
+    a.download = `roster-${tournament?.slug || "tournament"}.csv`;
     a.click();
   };
 

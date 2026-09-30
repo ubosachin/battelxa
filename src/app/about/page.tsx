@@ -8,7 +8,7 @@ export default function AboutPage() {
       <div className="text-center space-y-4">
         <BrandLogo size="lg" showTagline={true} />
         <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
-          Empowering India's Mobile Esports Warriors
+          Empowering India&apos;s Mobile Esports Warriors
         </h1>
         <p className="text-sm text-zinc-400 max-w-2xl mx-auto leading-relaxed">
           BATTLEXA is an esports tournament operations platform built to provide mobile gamers with structured competitive leagues, instant slot reservation, and transparent, verified prize payouts.

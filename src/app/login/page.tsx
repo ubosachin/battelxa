@@ -42,13 +42,15 @@ function LoginFormContent() {
   useEffect(() => {
     const errParam = searchParams.get("error");
     if (errParam) {
-      if (errParam === "google_not_configured") {
-        setShowDevModal(true);
-      } else if (errParam === "account_suspended") {
-        setError("Your account has been suspended or banned. Please contact support.");
-      } else {
-        setError("Google authentication failed. Please try again.");
-      }
+      queueMicrotask(() => {
+        if (errParam === "google_not_configured") {
+          setShowDevModal(true);
+        } else if (errParam === "account_suspended") {
+          setError("Your account has been suspended or banned. Please contact support.");
+        } else {
+          setError("Google authentication failed. Please try again.");
+        }
+      });
     }
   }, [searchParams]);
 
@@ -156,7 +158,7 @@ function LoginFormContent() {
             </button>
 
             <p className="text-[10px] xs:text-[11px] text-zinc-500 text-center leading-normal text-balance px-1">
-              By continuing, you agree to BATTLEXA's{" "}
+              By continuing, you agree to BATTLEXA&apos;s{" "}
               <Link href="/terms" className="text-zinc-400 underline hover:text-white transition-colors">
                 Terms of Service
               </Link>{" "}

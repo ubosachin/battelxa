@@ -4,31 +4,47 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { Trophy, Flame, Ban, CheckCircle2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
+import { Ban } from "lucide-react";
+
+interface AdminTournamentItem {
+  _id: string;
+  title: string;
+  gameName: string;
+  prizePool: number;
+  registeredSlots: number;
+  maxSlots: number;
+  status: string;
+}
 
 export default function AdminTournamentsPage() {
-  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [tournaments, setTournaments] = useState<AdminTournamentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchTournaments = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/tournaments?limit=50");
-      if (res.ok) {
-        const data = await res.json();
-        setTournaments(data.tournaments || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchTournaments();
-  }, []);
+    let isMounted = true;
+    async function loadTournaments() {
+      try {
+        const res = await fetch("/api/tournaments?limit=50");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setTournaments(data.tournaments || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadTournaments();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleCancelTournament = async (id: string, title: string) => {
     if (
@@ -47,7 +63,7 @@ export default function AdminTournamentsPage() {
       });
 
       if (res.ok) {
-        fetchTournaments();
+        setRefreshIndex((prev) => prev + 1);
       } else {
         alert("Failed to cancel tournament");
       }

@@ -8,6 +8,37 @@ import { Input } from "@/components/ui/Input";
 import { Alert } from "@/components/ui/Alert";
 import { Trophy, Upload, CheckCircle2, ArrowLeft, Shield } from "lucide-react";
 
+interface MatchRegistrationMember {
+  userId?: string;
+  gamerTag?: string;
+  inGameId?: string;
+}
+
+interface MatchRegistration {
+  _id: string;
+  userId?: string;
+  slotNumber?: number;
+  teamName?: string;
+  members?: MatchRegistrationMember[];
+}
+
+interface MatchTournament {
+  _id: string;
+  title: string;
+  prizePool?: number;
+}
+
+interface ResultRow {
+  teamOrUserId: string;
+  participantName: string;
+  rank: number;
+  kills: number;
+  placementPoints: number;
+  killPoints: number;
+  totalPoints: number;
+  prizeAwarded: number;
+}
+
 export default function OrganizerMatchesResultPage({
   params,
 }: {
@@ -16,11 +47,11 @@ export default function OrganizerMatchesResultPage({
   const { id } = use(params);
   const router = useRouter();
 
-  const [tournament, setTournament] = useState<any>(null);
-  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [tournament, setTournament] = useState<MatchTournament | null>(null);
+  const [registrations, setRegistrations] = useState<MatchRegistration[]>([]);
   const [evidenceUrl, setEvidenceUrl] = useState("");
   const [notes, setNotes] = useState("");
-  const [resultsData, setResultsData] = useState<any[]>([]);
+  const [resultsData, setResultsData] = useState<ResultRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -35,7 +66,7 @@ export default function OrganizerMatchesResultPage({
           setRegistrations(data.registrations || []);
 
           // Pre-populate result rows based on registrations
-          const rows = (data.registrations || []).map((r: any, idx: number) => ({
+          const rows = (data.registrations || []).map((r: MatchRegistration, idx: number) => ({
             teamOrUserId: r.userId || r._id,
             participantName: r.teamName || r.members?.[0]?.gamerTag || `Participant #${idx + 1}`,
             rank: idx + 1,
@@ -63,16 +94,16 @@ export default function OrganizerMatchesResultPage({
     loadData();
   }, [id]);
 
-  const updateResultRow = (index: number, field: string, value: any) => {
+  const updateResultRow = (index: number, field: keyof ResultRow, value: string | number) => {
     setResultsData((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
 
       if (field === "kills" || field === "placementPoints") {
-        const kills = field === "kills" ? parseInt(value, 10) || 0 : updated[index].kills;
+        const kills = field === "kills" ? Number(value) || 0 : updated[index].kills;
         const place =
           field === "placementPoints"
-            ? parseInt(value, 10) || 0
+            ? Number(value) || 0
             : updated[index].placementPoints;
         updated[index].killPoints = kills;
         updated[index].totalPoints = place + kills;

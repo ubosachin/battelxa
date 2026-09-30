@@ -11,9 +11,15 @@ export async function GET(req: NextRequest) {
 
     const filter: Record<string, unknown> = {};
     if (game === "free-fire-max") {
-      filter.freeFireId = { $exists: true, $ne: "" };
+      filter.$or = [
+        { freeFireId: { $exists: true, $ne: "" } },
+        { preferredGame: "FREE_FIRE_MAX" },
+      ];
     } else if (game === "bgmi") {
-      filter.bgmiId = { $exists: true, $ne: "" };
+      filter.$or = [
+        { bgmiId: { $exists: true, $ne: "" } },
+        { preferredGame: "BGMI" },
+      ];
     }
 
     const profiles = await PlayerProfile.find(filter)
@@ -28,7 +34,7 @@ export async function GET(req: NextRequest) {
           : "0.0%";
 
       let primaryGame = "Free Fire MAX";
-      if (p.bgmiId && !p.freeFireId) {
+      if (p.preferredGame === "BGMI" || (p.bgmiId && !p.freeFireId)) {
         primaryGame = "BGMI";
       } else if (p.freeFireId && p.bgmiId) {
         primaryGame = "Multi-Title";

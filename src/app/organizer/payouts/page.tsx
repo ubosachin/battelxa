@@ -8,34 +8,53 @@ import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Wallet, ShieldCheck, Clock, ArrowUpRight } from "lucide-react";
 
+interface WalletData {
+  balance: number;
+  lockedBalance: number;
+}
+
+interface PayoutRequestItem {
+  _id: string;
+  amount: number;
+  payoutMethod: string;
+  requestedAt: string;
+  status: string;
+}
+
 export default function OrganizerPayoutsPage() {
-  const [wallet, setWallet] = useState<any>(null);
-  const [payoutRequests, setPayoutRequests] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<WalletData | null>(null);
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequestItem[]>([]);
   const [amount, setAmount] = useState("500");
   const [upiId, setUpiId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const fetchPayoutData = async () => {
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/wallet");
-      if (res.ok) {
-        const data = await res.json();
-        setWallet(data.wallet);
-        setPayoutRequests(data.payoutRequests || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchPayoutData();
-  }, []);
+    let isMounted = true;
+    async function loadPayoutData() {
+      try {
+        const res = await fetch("/api/wallet");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setWallet(data.wallet);
+          setPayoutRequests(data.payoutRequests || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadPayoutData();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handlePayoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +89,7 @@ export default function OrganizerPayoutsPage() {
         type: "success",
         text: "Organizer revenue payout request queued for admin disbursement.",
       });
-      fetchPayoutData();
+      setRefreshIndex((prev) => prev + 1);
     } catch {
       setMessage({ type: "error", text: "Network error requesting payout" });
     } finally {

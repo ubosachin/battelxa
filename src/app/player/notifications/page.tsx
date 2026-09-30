@@ -6,26 +6,41 @@ import { formatTimeAgo } from "@/lib/utils";
 import { Bell, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+interface NotificationItem {
+  _id: string;
+  title: string;
+  message: string;
+  type: string;
+  link?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
 export default function PlayerNotificationsPage() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await fetch("/api/notifications");
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data.notifications || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchNotifications();
+    let isMounted = true;
+    async function loadNotifications() {
+      try {
+        const res = await fetch("/api/notifications");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setNotifications(data.notifications || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadNotifications();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const markAllRead = async () => {
@@ -60,7 +75,7 @@ export default function PlayerNotificationsPage() {
           <Bell className="h-8 w-8 text-zinc-600 mx-auto" />
           <h3 className="font-bold text-white text-base">No Notifications</h3>
           <p className="text-xs text-zinc-400">
-            You're all caught up! Match announcements will appear here.
+            You&apos;re all caught up! Match announcements will appear here.
           </p>
         </div>
       ) : (

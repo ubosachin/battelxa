@@ -2,10 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { formatDate } from "@/lib/utils";
-import { FileText, Shield } from "lucide-react";
+
+interface AuditLogItem {
+  _id: string;
+  action: string;
+  actorEmail: string;
+  entityType: string;
+  entityId: string;
+  createdAt: string;
+}
 
 export default function AdminAuditLogsPage() {
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

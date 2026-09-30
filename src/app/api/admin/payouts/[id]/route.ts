@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Types } from "mongoose";
 import { requireAuth } from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/db/connect";
 import { PayoutRequest, AuditLog } from "@/lib/db/models";
@@ -49,7 +50,7 @@ export async function PATCH(
     payout.status = status;
     payout.transactionReference = transactionReference || "";
     payout.adminNotes = adminNotes || "";
-    payout.processedBy = session.id as any;
+    payout.processedBy = new Types.ObjectId(session.id);
     payout.processedAt = new Date();
     await payout.save();
 

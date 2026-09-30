@@ -7,8 +7,25 @@ import { Modal } from "@/components/ui/Modal";
 import { Alert } from "@/components/ui/Alert";
 import { Users, Plus, Key, Copy, Check, Shield } from "lucide-react";
 
+interface TeamMember {
+  userId: string;
+  inGameName: string;
+  inGameId: string;
+  role: string;
+}
+
+interface TeamItem {
+  _id: string;
+  name: string;
+  tag: string;
+  game: string;
+  joinCode: string;
+  leaderId: string;
+  members: TeamMember[];
+}
+
 export default function PlayerTeamsPage() {
-  const [teams, setTeams] = useState<any[]>([]);
+  const [teams, setTeams] = useState<TeamItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
@@ -26,23 +43,30 @@ export default function PlayerTeamsPage() {
   const [joinError, setJoinError] = useState("");
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  const fetchTeams = async () => {
-    try {
-      const res = await fetch("/api/teams");
-      if (res.ok) {
-        const data = await res.json();
-        setTeams(data.teams || []);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   useEffect(() => {
-    fetchTeams();
-  }, []);
+    let isMounted = true;
+    async function loadTeams() {
+      try {
+        const res = await fetch("/api/teams");
+        if (isMounted && res.ok) {
+          const data = await res.json();
+          setTeams(data.teams || []);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadTeams();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshIndex]);
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +88,7 @@ export default function PlayerTeamsPage() {
       setIsCreateOpen(false);
       setName("");
       setTag("");
-      fetchTeams();
+      setRefreshIndex((prev) => prev + 1);
     } catch {
       setCreateError("Network error");
     } finally {
@@ -91,7 +115,7 @@ export default function PlayerTeamsPage() {
 
       setIsJoinOpen(false);
       setJoinCode("");
-      fetchTeams();
+      setRefreshIndex((prev) => prev + 1);
     } catch {
       setJoinError("Network error");
     } finally {
@@ -200,7 +224,7 @@ export default function PlayerTeamsPage() {
                   Roster ({team.members.length}/5)
                 </span>
                 <div className="space-y-1.5">
-                  {team.members.map((m: any, idx: number) => (
+                  {team.members.map((m: TeamMember, idx: number) => (
                     <div
                       key={idx}
                       className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-between text-xs"
