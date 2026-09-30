@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
-import { Swords, ShieldCheck, Zap, Trophy, Lock, Loader2, ArrowRight } from "lucide-react";
+import { Input } from "@/components/ui/Input";
+import { Swords, ShieldCheck, Zap, Trophy, Lock, Loader2, ArrowRight, Mail, User, ChevronDown } from "lucide-react";
 
 function GoogleIcon() {
   return (
@@ -41,12 +43,24 @@ function DiscordIcon() {
 function LoginFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect") || searchParams.get("returnTo") || "";
+
   const [loadingProvider, setLoadingProvider] = useState<"google" | "discord" | null>(null);
   const [error, setError] = useState("");
   const [showDevModal, setShowDevModal] = useState(false);
   const [devProvider, setDevProvider] = useState<"google" | "discord">("google");
   const [devEmail, setDevEmail] = useState("");
   const [devName, setDevName] = useState("");
+
+  // Optional Email / Password auth state
+  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [emailTab, setEmailTab] = useState<"signin" | "signup">(
+    searchParams.get("tab") === "register" ? "signup" : "signin"
+  );
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
 
   useEffect(() => {
     const errParam = searchParams.get("error");
@@ -72,13 +86,19 @@ function LoginFormContent() {
   const handleGoogleLogin = () => {
     setLoadingProvider("google");
     setError("");
-    window.location.href = "/api/auth/google";
+    const url = redirectParam
+      ? `/api/auth/google?redirect=${encodeURIComponent(redirectParam)}`
+      : "/api/auth/google";
+    window.location.href = url;
   };
 
   const handleDiscordLogin = () => {
     setLoadingProvider("discord");
     setError("");
-    window.location.href = "/api/auth/discord";
+    const url = redirectParam
+      ? `/api/auth/discord?redirect=${encodeURIComponent(redirectParam)}`
+      : "/api/auth/discord";
+    window.location.href = url;
   };
 
   const handleDevLogin = async (e: React.FormEvent) => {
@@ -100,11 +120,13 @@ function LoginFormContent() {
               email: devEmail.trim(),
               name: devName.trim() || devEmail.split("@")[0],
               googleId: `dev_google_${Date.now()}`,
+              redirect: redirectParam || undefined,
             }
           : {
               email: devEmail.trim() || undefined,
               username: devName.trim() || (devEmail ? devEmail.split("@")[0] : "DiscordPlayer"),
               discordId: `dev_discord_${Date.now()}`,
+              redirect: redirectParam || undefined,
             };
 
       const res = await fetch(endpoint, {
@@ -120,11 +142,66 @@ function LoginFormContent() {
         return;
       }
 
-      router.push(data.redirectUrl || "/player/dashboard");
+      router.push(data.redirectUrl || redirectParam || "/player/dashboard");
       router.refresh();
     } catch {
       setError("Failed to sign in. Please try again.");
       setLoadingProvider(null);
+    }
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setEmailLoading(true);
+
+    try {
+      if (emailTab === "signin") {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            redirect: redirectParam || undefined,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || "Failed to sign in");
+          setEmailLoading(false);
+          return;
+        }
+
+        router.push(data.redirectUrl || redirectParam || "/player/dashboard");
+        router.refresh();
+      } else {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+            role: "PLAYER",
+            redirect: redirectParam || undefined,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error || "Failed to create account");
+          setEmailLoading(false);
+          return;
+        }
+
+        router.push(data.redirectUrl || redirectParam || "/player/onboarding");
+        router.refresh();
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+      setEmailLoading(false);
     }
   };
 
@@ -146,9 +223,15 @@ function LoginFormContent() {
               href="/"
               className="inline-flex items-center gap-2.5 sm:gap-3 group focus:outline-none"
             >
-              <div className="relative flex items-center justify-center p-2.5 sm:p-3 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-700 to-zinc-950 border border-violet-400/40 shadow-xl shadow-violet-950/60 group-hover:scale-105 group-hover:border-lime-400/50 transition-all duration-300 shrink-0">
-                <Swords className="h-6 w-6 sm:h-7 sm:w-7 text-lime-400 transform -rotate-12 drop-shadow" />
-                <div className="absolute inset-0 rounded-2xl bg-lime-400/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-center justify-center p-0.5 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-700 to-zinc-950 border border-lime-400/40 shadow-xl shadow-lime-950/60 group-hover:scale-105 group-hover:border-lime-400 transition-all duration-300 shrink-0 overflow-hidden">
+                <Image
+                  src="/logo-icon.png"
+                  alt="BATTLEXA"
+                  width={52}
+                  height={52}
+                  className="rounded-2xl object-cover"
+                  priority
+                />
               </div>
               <div className="text-2xl xs:text-3xl sm:text-4xl font-black tracking-tight flex items-center leading-none select-none">
                 <span className="text-white">BATTLE</span>
@@ -161,10 +244,10 @@ function LoginFormContent() {
                 <span>Free Fire MAX & BGMI Arena</span>
               </div>
               <h1 className="text-lg xs:text-xl sm:text-2xl font-black text-white uppercase tracking-tight pt-0.5">
-                Sign In to Arena
+                Enter Arena
               </h1>
               <p className="text-xs text-zinc-400 max-w-[340px] mx-auto leading-relaxed text-balance">
-                Instant Google & Discord access to match lobbies, room credentials & automated payouts.
+                1-Click Instant Login or Sign-up with Google & Discord. Claim your ₹50 starter bonus!
               </p>
             </div>
           </div>
@@ -210,6 +293,87 @@ function LoginFormContent() {
                 </>
               )}
             </button>
+
+            {/* Optional Email / Password Accordion */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setShowEmailForm(!showEmailForm)}
+                className="w-full flex items-center justify-center gap-1.5 py-1 text-[11px] font-semibold text-zinc-400 hover:text-white transition cursor-pointer"
+              >
+                <span>{showEmailForm ? "Hide email options" : "Or continue with Email"}</span>
+                <ChevronDown className={`h-3 w-3 transition-transform ${showEmailForm ? "rotate-180" : ""}`} />
+              </button>
+
+              {showEmailForm && (
+                <div className="mt-2.5 p-3.5 rounded-xl bg-zinc-900/90 border border-zinc-800 space-y-3">
+                  <div className="grid grid-cols-2 gap-1.5 bg-black/40 p-1 rounded-lg border border-zinc-800">
+                    <button
+                      type="button"
+                      onClick={() => setEmailTab("signin")}
+                      className={`text-xs py-1.5 rounded-md font-bold transition cursor-pointer ${
+                        emailTab === "signin"
+                          ? "bg-violet-600 text-white shadow-sm"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEmailTab("signup")}
+                      className={`text-xs py-1.5 rounded-md font-bold transition cursor-pointer ${
+                        emailTab === "signup"
+                          ? "bg-lime-500 text-black shadow-sm"
+                          : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      Create Account
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleEmailSubmit} className="space-y-2.5">
+                    {emailTab === "signup" && (
+                      <Input
+                        label="Username"
+                        placeholder="e.g. Phoenix99"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        leftIcon={<User className="h-4 w-4" />}
+                        required
+                      />
+                    )}
+                    <Input
+                      label="Email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      leftIcon={<Mail className="h-4 w-4" />}
+                      required
+                    />
+                    <Input
+                      label="Password"
+                      type="password"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      leftIcon={<Lock className="h-4 w-4" />}
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      variant={emailTab === "signin" ? "primary" : "lime"}
+                      size="sm"
+                      className="w-full font-bold text-xs py-2.5"
+                      isLoading={emailLoading}
+                    >
+                      {emailTab === "signin" ? "Sign In with Email" : "Create Account & Claim ₹50"}
+                    </Button>
+                  </form>
+                </div>
+              )}
+            </div>
 
             <p className="text-[10px] xs:text-[11px] text-zinc-500 text-center leading-normal text-balance px-1 pt-1">
               By continuing, you agree to BATTLEXA&apos;s{" "}

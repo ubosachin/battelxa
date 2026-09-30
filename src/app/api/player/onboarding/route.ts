@@ -126,10 +126,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const rawRedirect = body.redirect;
+    const returnTo =
+      rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+        ? rawRedirect
+        : "/player/dashboard";
+
     return NextResponse.json({
       success: true,
       message: "Onboarding completed successfully",
-      redirectUrl: "/player/dashboard",
+      redirectUrl: returnTo,
       profile: updatedProfile,
     });
   } catch (error: unknown) {

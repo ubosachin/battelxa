@@ -9,10 +9,15 @@ export async function GET(req: NextRequest) {
 
   const redirectUri = `${appUrl}/api/auth/google/callback`;
 
+  const returnParam =
+    req.nextUrl.searchParams.get("redirect") ||
+    req.nextUrl.searchParams.get("returnTo") ||
+    "";
+
   if (!clientId) {
-    return NextResponse.redirect(
-      new URL("/login?error=google_not_configured", req.url)
-    );
+    const errorUrl = new URL("/login?error=google_not_configured", req.url);
+    if (returnParam) errorUrl.searchParams.set("redirect", returnParam);
+    return NextResponse.redirect(errorUrl);
   }
 
   const googleAuthUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -22,6 +27,9 @@ export async function GET(req: NextRequest) {
   googleAuthUrl.searchParams.set("scope", "openid email profile");
   googleAuthUrl.searchParams.set("access_type", "offline");
   googleAuthUrl.searchParams.set("prompt", "select_account");
+  if (returnParam) {
+    googleAuthUrl.searchParams.set("state", returnParam);
+  }
 
   return NextResponse.redirect(googleAuthUrl.toString());
 }

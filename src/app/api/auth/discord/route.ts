@@ -9,10 +9,15 @@ export async function GET(req: NextRequest) {
 
   const redirectUri = `${appUrl}/api/auth/discord/callback`;
 
+  const returnParam =
+    req.nextUrl.searchParams.get("redirect") ||
+    req.nextUrl.searchParams.get("returnTo") ||
+    "";
+
   if (!clientId) {
-    return NextResponse.redirect(
-      new URL("/login?error=discord_not_configured", req.url)
-    );
+    const errorUrl = new URL("/login?error=discord_not_configured", req.url);
+    if (returnParam) errorUrl.searchParams.set("redirect", returnParam);
+    return NextResponse.redirect(errorUrl);
   }
 
   const discordAuthUrl = new URL("https://discord.com/api/oauth2/authorize");
@@ -21,6 +26,9 @@ export async function GET(req: NextRequest) {
   discordAuthUrl.searchParams.set("response_type", "code");
   discordAuthUrl.searchParams.set("scope", "identify email");
   discordAuthUrl.searchParams.set("prompt", "consent");
+  if (returnParam) {
+    discordAuthUrl.searchParams.set("state", returnParam);
+  }
 
   return NextResponse.redirect(discordAuthUrl.toString());
 }

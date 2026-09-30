@@ -133,13 +133,27 @@ export async function POST(req: NextRequest) {
       isOnboarded: isNewUser ? false : user.isOnboarded !== false,
     });
 
-    let redirectUrl = "/player/dashboard";
+    const rawRedirect = body.redirect;
+    const returnTo =
+      rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+        ? rawRedirect
+        : null;
+
+    const profile = await PlayerProfile.findOne({ userId: user._id });
+    const hasCompleteDetails =
+      !isNewUser &&
+      user.isOnboarded === true &&
+      Boolean(profile && (profile.isOnboarded === true || profile.freeFireId || profile.bgmiId));
+
+    let redirectUrl = returnTo || "/player/dashboard";
     if (user.role === "ADMIN") {
-      redirectUrl = "/admin/dashboard";
+      redirectUrl = returnTo || "/admin/dashboard";
     } else if (user.role === "ORGANIZER") {
-      redirectUrl = "/organizer/dashboard";
-    } else if (isNewUser || user.isOnboarded === false) {
-      redirectUrl = "/player/onboarding";
+      redirectUrl = returnTo || "/organizer/dashboard";
+    } else if (isNewUser || !hasCompleteDetails) {
+      redirectUrl = returnTo
+        ? `/player/onboarding?redirect=${encodeURIComponent(returnTo)}`
+        : "/player/onboarding";
     }
 
     return NextResponse.json({

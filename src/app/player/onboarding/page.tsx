@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import confetti from "canvas-confetti";
 import {
@@ -115,8 +115,10 @@ const PLAYSTYLES = [
   },
 ];
 
-export default function PlayerOnboardingPage() {
+function PlayerOnboardingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect") || searchParams.get("returnTo") || "";
 
   // Page state
   const [step, setStep] = useState<number>(1);
@@ -234,6 +236,7 @@ export default function PlayerOnboardingPage() {
           discordHandle: discordHandle.trim(),
           notifyWhatsapp,
           skip: isSkipping,
+          redirect: redirectParam || undefined,
         }),
       });
 
@@ -249,7 +252,7 @@ export default function PlayerOnboardingPage() {
       }
 
       setTimeout(() => {
-        router.push(data.redirectUrl || "/player/dashboard");
+        router.push(data.redirectUrl || redirectParam || "/player/dashboard");
         router.refresh();
       }, 700);
     } catch {
@@ -945,5 +948,22 @@ export default function PlayerOnboardingPage() {
         BATTLEXA Esports Arena • Fair Play Guaranteed • Instant Automated UPI & Room Code Delivery
       </footer>
     </div>
+  );
+}
+
+export default function PlayerOnboardingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#08090e] flex flex-col items-center justify-center p-4">
+          <Loader2 className="h-10 w-10 text-lime-400 animate-spin mb-4" />
+          <p className="text-sm font-bold text-zinc-300 uppercase tracking-widest">
+            Initializing Contender Clearance...
+          </p>
+        </div>
+      }
+    >
+      <PlayerOnboardingContent />
+    </Suspense>
   );
 }

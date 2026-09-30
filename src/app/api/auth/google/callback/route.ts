@@ -13,10 +13,19 @@ export async function GET(req: NextRequest) {
     `${req.nextUrl.protocol}//${req.nextUrl.host}`;
   const appUrl = rawAppUrl.replace(/\/+$/, "");
 
+  const rawState = req.nextUrl.searchParams.get("state");
+  const returnTo =
+    rawState && rawState.startsWith("/") && !rawState.startsWith("//")
+      ? rawState
+      : null;
+
   if (error || !code) {
-    return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error || "access_denied")}`, req.url)
+    const errorUrl = new URL(
+      `/login?error=${encodeURIComponent(error || "access_denied")}`,
+      req.url
     );
+    if (returnTo) errorUrl.searchParams.set("redirect", returnTo);
+    return NextResponse.redirect(errorUrl);
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -24,9 +33,9 @@ export async function GET(req: NextRequest) {
   const redirectUri = `${appUrl}/api/auth/google/callback`;
 
   if (!clientId || !clientSecret) {
-    return NextResponse.redirect(
-      new URL("/login?error=google_not_configured", req.url)
-    );
+    const errorUrl = new URL("/login?error=google_not_configured", req.url);
+    if (returnTo) errorUrl.searchParams.set("redirect", returnTo);
+    return NextResponse.redirect(errorUrl);
   }
 
   try {
@@ -163,14 +172,23 @@ export async function GET(req: NextRequest) {
       isOnboarded: isNewUser ? false : user.isOnboarded !== false,
     });
 
-    // 5. Redirect: Only brand new users or players with pending onboarding go to onboarding
-    let destination = "/player/dashboard";
+    // 5. Check if user is old user with complete details vs new/incomplete user
+    const profile = await PlayerProfile.findOne({ userId: user._id });
+    const hasCompleteDetails =
+      !isNewUser &&
+      user.isOnboarded === true &&
+      profile &&
+      (profile.isOnboarded === true || Boolean(profile.freeFireId || profile.bgmiId));
+
+    let destination = returnTo || "/player/dashboard";
     if (user.role === "ADMIN") {
-      destination = "/admin/dashboard";
+      destination = returnTo || "/admin/dashboard";
     } else if (user.role === "ORGANIZER") {
-      destination = "/organizer/dashboard";
-    } else if (isNewUser || user.isOnboarded === false) {
-      destination = "/player/onboarding";
+      destination = returnTo || "/organizer/dashboard";
+    } else if (isNewUser || !hasCompleteDetails) {
+      destination = returnTo
+        ? `/player/onboarding?redirect=${encodeURIComponent(returnTo)}`
+        : "/player/onboarding";
     }
 
     return NextResponse.redirect(new URL(destination, req.url));

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db/connect";
-import { User, OrganizerProfile } from "@/lib/db/models";
+import { User, OrganizerProfile, PlayerProfile } from "@/lib/db/models";
 import { comparePassword } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { LoginSchema } from "@/lib/validations/auth";
@@ -18,6 +18,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { email, password } = validated.data;
+    const rawRedirect = body.redirect;
+    const returnTo =
+      rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+        ? rawRedirect
+        : null;
 
     await connectToDatabase();
 
@@ -57,6 +62,14 @@ export async function POST(req: NextRequest) {
       isVerifiedOrganizer = org?.verifiedByAdmin || false;
     }
 
+    let hasCompleteDetails = user.isOnboarded === true;
+    if (user.role === "PLAYER") {
+      const profile = await PlayerProfile.findOne({ userId: user._id });
+      hasCompleteDetails =
+        user.isOnboarded === true &&
+        Boolean(profile && (profile.isOnboarded === true || profile.freeFireId || profile.bgmiId));
+    }
+
     const isOnboarded = user.isOnboarded !== false;
 
     await setSessionCookie({
@@ -69,13 +82,15 @@ export async function POST(req: NextRequest) {
       isOnboarded,
     });
 
-    let redirectUrl = "/player/dashboard";
+    let redirectUrl = returnTo || "/player/dashboard";
     if (user.role === "ADMIN") {
-      redirectUrl = "/admin/dashboard";
+      redirectUrl = returnTo || "/admin/dashboard";
     } else if (user.role === "ORGANIZER") {
-      redirectUrl = "/organizer/dashboard";
-    } else if (user.role === "PLAYER" && user.isOnboarded === false) {
-      redirectUrl = "/player/onboarding";
+      redirectUrl = returnTo || "/organizer/dashboard";
+    } else if (user.role === "PLAYER" && !hasCompleteDetails) {
+      redirectUrl = returnTo
+        ? `/player/onboarding?redirect=${encodeURIComponent(returnTo)}`
+        : "/player/onboarding";
     }
 
     return NextResponse.json({

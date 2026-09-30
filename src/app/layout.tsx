@@ -37,6 +37,15 @@ export const metadata: Metadata = {
     "Free Fire Custom Room",
     "Battle Royale Scrims",
   ],
+  icons: {
+    icon: [
+      { url: "/logo-icon.png" },
+      { url: "/logo-icon.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/logo-icon.png" },
+    ],
+  },
   formatDetection: {
     telephone: false,
   },

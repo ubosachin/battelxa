@@ -113,10 +113,23 @@ export async function POST(req: NextRequest) {
       link: isPlayer ? "/player/onboarding" : "/organizer/dashboard",
     });
 
+    const rawRedirect = body.redirect;
+    const returnTo =
+      rawRedirect && rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+        ? rawRedirect
+        : null;
+
+    let redirectUrl = returnTo || (isPlayer ? "/player/onboarding" : "/organizer/dashboard");
+    if (isPlayer) {
+      redirectUrl = returnTo
+        ? `/player/onboarding?redirect=${encodeURIComponent(returnTo)}`
+        : "/player/onboarding";
+    }
+
     return NextResponse.json(
       {
         message: "Registration successful",
-        redirectUrl: isPlayer ? "/player/onboarding" : "/organizer/dashboard",
+        redirectUrl,
         user: {
           id: newUser._id,
           username: newUser.username,
