@@ -16,9 +16,6 @@ import {
   Wallet,
   LogOut,
   LayoutDashboard,
-  User as UserIcon,
-  Smartphone,
-  Sparkles,
 } from "lucide-react";
 
 interface UserSession {
@@ -327,23 +324,6 @@ export function Navbar() {
                   🎯 BGMI
                 </Link>
               </div>
-            </div>
-
-            {/* Mobile App Banner Link */}
-            <div className="pt-2">
-              <Link
-                href="/faq"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-violet-950/40 to-lime-950/40 border border-lime-500/20 active:scale-95 transition-transform"
-              >
-                <div className="flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-lime-400" />
-                  <span className="text-xs font-bold text-zinc-200">BATTLEXA PWA App</span>
-                </div>
-                <span className="text-[10px] text-lime-400 font-bold flex items-center gap-0.5">
-                  <Sparkles className="w-3 h-3 inline" /> Install Guide
-                </span>
-              </Link>
             </div>
           </div>
         </div>

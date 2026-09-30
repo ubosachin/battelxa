@@ -42,11 +42,10 @@
   - Referee Dispute Resolution portal with attached evidence inspection.
   - Immutable Administrator Audit Log tracking all privileged administrative operations.
 
-### 2. 📱 Mobile App (PWA) Experience
-- **Native Esports App Feel**: Built as an installable Progressive Web App (PWA) with `manifest.webmanifest`, standalone display mode, orientation locking, and zero-flicker overscroll containment.
+### 2. 📱 Mobile First Experience
+- **Native Esports App Feel**: Built for fluid mobile browsing with touch-optimized interfaces, role-adaptive layouts, and zero-flicker overscroll containment.
 - **Mobile Bottom Navigation Dock**: Role-adaptive bottom bar (Home, Tournaments, My Matches, Wallet with live balance badge, and Contender Profile) with haptic vibration feedback.
 - **Top App Bar**: Header displays live wallet balance pill, instant notifications, and user avatar.
-- **1-Tap PWA Install**: Automatic Chrome/Android install banner and iOS Safari "Add to Home Screen" instructions.
 - **Touch-Friendly Filter Chips**: Horizontal swipeable chips for instant switching between Free Fire MAX and BGMI without opening dropdowns.
 - **Mobile Sticky Join Dock**: On match detail screens, a sticky bottom dock provides 1-tap slot reservation and prize pool display.
 

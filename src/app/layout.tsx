@@ -4,7 +4,6 @@ import "./globals.css";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { MobileBottomNav } from "@/components/shared/MobileBottomNav";
-import { PwaInstallPrompt } from "@/components/shared/PwaInstallPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,12 +37,6 @@ export const metadata: Metadata = {
     "Free Fire Custom Room",
     "Battle Royale Scrims",
   ],
-  manifest: "/manifest.webmanifest",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "BATTLEXA",
-  },
   formatDetection: {
     telephone: false,
   },
@@ -60,7 +53,6 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#08090e] text-zinc-100 selection:bg-violet-600 selection:text-white">
-        <PwaInstallPrompt />
         <Navbar />
         <main className="flex-1 flex flex-col mobile-bottom-offset md:pb-0">
           {children}
