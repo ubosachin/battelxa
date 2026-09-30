@@ -8,9 +8,10 @@ import { setSessionCookie } from "@/lib/auth/session";
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   const error = req.nextUrl.searchParams.get("error");
-  const appUrl =
+  const rawAppUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     `${req.nextUrl.protocol}//${req.nextUrl.host}`;
+  const appUrl = rawAppUrl.replace(/\/+$/, "");
 
   if (error || !code) {
     return NextResponse.redirect(
