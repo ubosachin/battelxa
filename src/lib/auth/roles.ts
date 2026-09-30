@@ -7,6 +7,7 @@ export interface SessionUser {
   role: UserRole;
   isVerifiedOrganizer?: boolean;
   avatar?: string;
+  isOnboarded?: boolean;
 }
 
 export const ROLES = {

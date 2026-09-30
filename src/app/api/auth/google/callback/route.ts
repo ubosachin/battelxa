@@ -73,6 +73,8 @@ export async function GET(req: NextRequest) {
       $or: [{ googleId }, { email: email.toLowerCase() }],
     });
 
+    let isNewUser = false;
+
     if (user) {
       // Update Google info if not present
       let updated = false;
@@ -92,6 +94,7 @@ export async function GET(req: NextRequest) {
         await user.save();
       }
     } else {
+      isNewUser = true;
       // Create new user from Google profile
       let baseUsername = (name || email.split("@")[0])
         .replace(/[^a-zA-Z0-9_]/g, "")
@@ -116,15 +119,17 @@ export async function GET(req: NextRequest) {
         avatar: picture || "",
         role: "PLAYER",
         isVerified: true,
+        isOnboarded: false,
         status: "ACTIVE",
       });
 
-      // Initialize player wallet with zero balance
+      // Initialize player wallet with ₹50 starter bonus
       await Wallet.create({
         userId: user._id,
-        balance: 0,
+        balance: 50,
         lockedBalance: 0,
         currency: "INR",
+        totalDeposited: 50,
       });
 
       // Initialize player profile
@@ -132,6 +137,7 @@ export async function GET(req: NextRequest) {
         userId: user._id,
         gamerTag: username,
         avatar: picture || "",
+        isOnboarded: false,
         matchesPlayed: 0,
         matchesWon: 0,
         totalKills: 0,
@@ -154,14 +160,17 @@ export async function GET(req: NextRequest) {
       username: user.username,
       role: user.role,
       avatar: user.avatar,
+      isOnboarded: isNewUser ? false : user.isOnboarded !== false,
     });
 
-    // 5. Redirect to role-appropriate dashboard
+    // 5. Redirect: Only brand new users or players with pending onboarding go to onboarding
     let destination = "/player/dashboard";
     if (user.role === "ADMIN") {
       destination = "/admin/dashboard";
     } else if (user.role === "ORGANIZER") {
       destination = "/organizer/dashboard";
+    } else if (isNewUser || user.isOnboarded === false) {
+      destination = "/player/onboarding";
     }
 
     return NextResponse.redirect(new URL(destination, req.url));

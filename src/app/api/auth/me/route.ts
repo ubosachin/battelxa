@@ -11,11 +11,19 @@ export async function GET() {
     }
 
     await connectToDatabase();
+    const { User } = await import("@/lib/db/models/User");
+    const userDoc = await User.findById(session.id).select("isOnboarded avatar role username email");
+    const isOnboarded = userDoc?.isOnboarded !== false;
+
     const wallet = await Wallet.findOne({ userId: session.id });
     const profile = await PlayerProfile.findOne({ userId: session.id });
 
     return NextResponse.json({
-      user: session,
+      user: {
+        ...session,
+        avatar: userDoc?.avatar || session.avatar,
+        isOnboarded,
+      },
       wallet: wallet
         ? {
             balance: wallet.balance,

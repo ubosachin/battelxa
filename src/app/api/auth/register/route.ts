@@ -53,12 +53,14 @@ export async function POST(req: NextRequest) {
     const passwordHash = await hashPassword(password);
 
     // Create User
+    const isPlayer = role === "PLAYER";
     const newUser = await User.create({
       username,
       email: email.toLowerCase(),
       passwordHash,
       role,
       isVerified: false,
+      isOnboarded: isPlayer ? false : true,
       status: "ACTIVE",
     });
 
@@ -77,6 +79,7 @@ export async function POST(req: NextRequest) {
       gamerTag: gamerTag || username,
       freeFireId: freeFireId || "",
       bgmiId: bgmiId || "",
+      isOnboarded: false,
     });
 
     // If registered as organizer, create Organizer Profile pending verification
@@ -97,6 +100,7 @@ export async function POST(req: NextRequest) {
       username: newUser.username,
       role: newUser.role,
       isVerifiedOrganizer: false,
+      isOnboarded: isPlayer ? false : true,
     });
 
     // Send welcome notification
@@ -106,17 +110,19 @@ export async function POST(req: NextRequest) {
       message:
         "Your gladiator account has been created. A ₹50 welcome bonus has been credited to your arena wallet!",
       type: "SYSTEM",
-      link: "/player/dashboard",
+      link: isPlayer ? "/player/onboarding" : "/organizer/dashboard",
     });
 
     return NextResponse.json(
       {
         message: "Registration successful",
+        redirectUrl: isPlayer ? "/player/onboarding" : "/organizer/dashboard",
         user: {
           id: newUser._id,
           username: newUser.username,
           email: newUser.email,
           role: newUser.role,
+          isOnboarded: isPlayer ? false : true,
         },
       },
       { status: 201 }

@@ -59,11 +59,11 @@ export default function PlayerDashboard() {
 
   const wallet = data?.wallet || { balance: 50, lockedBalance: 0, totalWon: 0 };
   const profile = data?.profile || {
-    matchesPlayed: 14,
-    matchesWon: 4,
-    totalKills: 58,
-    earnings: 2400,
-    rankTitle: "Elite Striker",
+    matchesPlayed: 0,
+    matchesWon: 0,
+    totalKills: 0,
+    earnings: 0,
+    rankTitle: "Rookie Contender",
   };
 
   return (

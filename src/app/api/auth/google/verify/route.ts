@@ -49,6 +49,8 @@ export async function POST(req: NextRequest) {
       ],
     });
 
+    let isNewUser = false;
+
     if (user) {
       let updated = false;
       if (!user.googleId && userGoogleId) {
@@ -67,6 +69,7 @@ export async function POST(req: NextRequest) {
         await user.save();
       }
     } else {
+      isNewUser = true;
       let baseUsername = (userName || userEmail.split("@")[0])
         .replace(/[^a-zA-Z0-9_]/g, "")
         .slice(0, 20);
@@ -89,20 +92,23 @@ export async function POST(req: NextRequest) {
         avatar: userPicture || "",
         role: "PLAYER",
         isVerified: true,
+        isOnboarded: false,
         status: "ACTIVE",
       });
 
       await Wallet.create({
         userId: user._id,
-        balance: 0,
+        balance: 50,
         lockedBalance: 0,
         currency: "INR",
+        totalDeposited: 50,
       });
 
       await PlayerProfile.create({
         userId: user._id,
         gamerTag: username,
         avatar: userPicture || "",
+        isOnboarded: false,
         matchesPlayed: 0,
         matchesWon: 0,
         totalKills: 0,
@@ -124,6 +130,7 @@ export async function POST(req: NextRequest) {
       username: user.username,
       role: user.role,
       avatar: user.avatar,
+      isOnboarded: isNewUser ? false : user.isOnboarded !== false,
     });
 
     let redirectUrl = "/player/dashboard";
@@ -131,6 +138,8 @@ export async function POST(req: NextRequest) {
       redirectUrl = "/admin/dashboard";
     } else if (user.role === "ORGANIZER") {
       redirectUrl = "/organizer/dashboard";
+    } else if (isNewUser || user.isOnboarded === false) {
+      redirectUrl = "/player/onboarding";
     }
 
     return NextResponse.json({
@@ -141,6 +150,7 @@ export async function POST(req: NextRequest) {
         username: user.username,
         role: user.role,
         avatar: user.avatar,
+        isOnboarded: isNewUser ? false : user.isOnboarded !== false,
       },
       redirectUrl,
     });

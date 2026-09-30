@@ -8,6 +8,7 @@ export interface IUser extends Document {
   role: "PLAYER" | "ORGANIZER" | "ADMIN";
   avatar?: string;
   isVerified: boolean;
+  isOnboarded?: boolean;
   status: "ACTIVE" | "SUSPENDED" | "BANNED";
   createdAt: Date;
   updatedAt: Date;
@@ -54,6 +55,9 @@ const UserSchema = new Schema<IUser>(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    isOnboarded: {
+      type: Boolean,
     },
     status: {
       type: String,

@@ -12,6 +12,7 @@ export async function signToken(user: SessionUser): Promise<string> {
     role: user.role,
     isVerifiedOrganizer: user.isVerifiedOrganizer,
     avatar: user.avatar,
+    isOnboarded: user.isOnboarded,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -29,6 +30,7 @@ export async function verifyToken(token: string): Promise<SessionUser | null> {
       role: payload.role as UserRole,
       isVerifiedOrganizer: payload.isVerifiedOrganizer as boolean | undefined,
       avatar: payload.avatar as string | undefined,
+      isOnboarded: payload.isOnboarded as boolean | undefined,
     };
   } catch {
     return null;

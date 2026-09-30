@@ -9,6 +9,14 @@ export interface IPlayerProfile extends Document {
   phone?: string;
   discordHandle?: string;
   avatar?: string;
+  isOnboarded?: boolean;
+  preferredGame?: "FREE_FIRE_MAX" | "BGMI" | "BOTH";
+  playstyle?: string;
+  deviceType?: string;
+  experienceLevel?: string;
+  stateOrCity?: string;
+  notifyWhatsapp?: boolean;
+  notifyDiscord?: boolean;
   matchesPlayed: number;
   matchesWon: number;
   totalKills: number;
@@ -59,6 +67,38 @@ const PlayerProfileSchema = new Schema<IPlayerProfile>(
     avatar: {
       type: String,
       default: "",
+    },
+    isOnboarded: {
+      type: Boolean,
+    },
+    preferredGame: {
+      type: String,
+      enum: ["FREE_FIRE_MAX", "BGMI", "BOTH"],
+      default: "BOTH",
+    },
+    playstyle: {
+      type: String,
+      default: "Assaulter / Rusher",
+    },
+    deviceType: {
+      type: String,
+      default: "Android Smartphone",
+    },
+    experienceLevel: {
+      type: String,
+      default: "Competitive Contender",
+    },
+    stateOrCity: {
+      type: String,
+      default: "",
+    },
+    notifyWhatsapp: {
+      type: Boolean,
+      default: true,
+    },
+    notifyDiscord: {
+      type: Boolean,
+      default: false,
     },
     matchesPlayed: {
       type: Number,

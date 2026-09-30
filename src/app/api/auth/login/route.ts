@@ -57,6 +57,8 @@ export async function POST(req: NextRequest) {
       isVerifiedOrganizer = org?.verifiedByAdmin || false;
     }
 
+    const isOnboarded = user.isOnboarded !== false;
+
     await setSessionCookie({
       id: user._id.toString(),
       email: user.email,
@@ -64,16 +66,28 @@ export async function POST(req: NextRequest) {
       role: user.role,
       isVerifiedOrganizer,
       avatar: user.avatar,
+      isOnboarded,
     });
+
+    let redirectUrl = "/player/dashboard";
+    if (user.role === "ADMIN") {
+      redirectUrl = "/admin/dashboard";
+    } else if (user.role === "ORGANIZER") {
+      redirectUrl = "/organizer/dashboard";
+    } else if (user.role === "PLAYER" && user.isOnboarded === false) {
+      redirectUrl = "/player/onboarding";
+    }
 
     return NextResponse.json({
       message: "Login successful",
+      redirectUrl,
       user: {
         id: user._id,
         username: user.username,
         email: user.email,
         role: user.role,
         isVerifiedOrganizer,
+        isOnboarded,
       },
     });
   } catch (error: unknown) {

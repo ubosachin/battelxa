@@ -49,10 +49,12 @@ export default function RegisterPage() {
         return;
       }
 
-      if (role === "ORGANIZER") {
+      if (data.redirectUrl) {
+        router.push(data.redirectUrl);
+      } else if (role === "ORGANIZER") {
         router.push("/organizer/dashboard");
       } else {
-        router.push("/player/dashboard");
+        router.push("/player/onboarding");
       }
       router.refresh();
     } catch {
