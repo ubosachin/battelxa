@@ -3,6 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { RoomCredentialsCard } from "@/components/tournament/RoomCredentialsCard";
+import { SlotAllocationMatrix } from "@/components/tournament/SlotAllocationMatrix";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
@@ -17,6 +18,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   HelpCircle,
+  Gamepad2,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { GameLogo } from "@/components/shared/GameLogo";
@@ -309,8 +311,17 @@ export default function TournamentDetailPage({
                 : `Enter Arena (₹${tournament.entryFee})`}
             </Button>
           ) : (
-            <div className="text-xs text-lime-400 font-bold bg-lime-950/30 border border-lime-800/40 px-4 py-2.5 rounded-lg flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> You are confirmed in this tournament. Scroll down for match credentials.
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="text-xs text-lime-400 font-bold bg-lime-950/30 border border-lime-800/40 px-4 py-2.5 rounded-lg flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>Confirmed {userSlotNumber ? `• Slot #${userSlotNumber}` : ""}</span>
+              </div>
+              <Link href={`/tournaments/${tournament._id}/room`} className="w-full sm:w-auto">
+                <Button size="sm" variant="primary" className="w-full text-xs font-black shadow-lg shadow-lime-500/20">
+                  <Gamepad2 className="h-4 w-4 mr-1.5 text-black" />
+                  Enter Live Match Arena
+                </Button>
+              </Link>
             </div>
           )}
 
@@ -322,7 +333,7 @@ export default function TournamentDetailPage({
 
       {/* Main Grid: Details + Credentials */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column (2/3): Credentials, Rules, Joined Rosters */}
+        {/* Left Column (2/3): Credentials, Rules, Slot Matrix */}
         <div className="lg:col-span-2 space-y-6">
           {/* Room Credentials Card */}
           <RoomCredentialsCard
@@ -331,6 +342,14 @@ export default function TournamentDetailPage({
             releaseTime={tournament.roomCredentials?.releaseTime || tournament.startTime}
             initialRoomId={tournament.roomCredentials?.roomId}
             initialPassword={tournament.roomCredentials?.password}
+            userSlotNumber={userSlotNumber}
+            gameName={tournament.gameName}
+            onCheckInSuccess={() => {
+              // Refresh tournament data to update check-in badges
+              fetch(`/api/tournaments/${tournament._id}`)
+                .then((r) => r.json())
+                .then((d) => setRegistrations(d.registrations || []));
+            }}
           />
 
           {/* Tournament Rules & Regulations */}
@@ -343,44 +362,15 @@ export default function TournamentDetailPage({
             </div>
           </div>
 
-          {/* Registered Slots & Squads */}
-          <div className="rounded-xl bg-[#0e111a] border border-white/[0.08] p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Users className="h-4 w-4 text-lime-400" /> Registered Gladiators ({registrations.length})
-              </h3>
-              <span className="text-xs text-zinc-500">
-                {tournament.maxSlots - registrations.length} slots remaining
-              </span>
-            </div>
-
-            {registrations.length === 0 ? (
-              <p className="text-xs text-zinc-500 italic py-4">
-                No players registered yet. Be the first to claim Slot #1!
-              </p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {registrations.map((reg) => (
-                  <div
-                    key={reg._id}
-                    className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800 flex items-center justify-between text-xs"
-                  >
-                    <div>
-                      <span className="text-[10px] font-bold text-violet-400 block">
-                        Slot #{reg.slotNumber}
-                      </span>
-                      <span className="font-semibold text-zinc-200">
-                        {reg.teamName || reg.members?.[0]?.gamerTag || "Warrior"}
-                      </span>
-                    </div>
-                    <Badge variant="zinc" className="text-[9px]">
-                      {reg.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Official Slot Allocation Matrix */}
+          <SlotAllocationMatrix
+            maxSlots={tournament.maxSlots}
+            format={tournament.format}
+            gameName={tournament.gameName}
+            registrations={registrations}
+            userSlotNumber={userSlotNumber}
+            isRegistered={isRegistered}
+          />
         </div>
 
         {/* Right Column (1/3): Prize Breakdown & Organizer Info */}

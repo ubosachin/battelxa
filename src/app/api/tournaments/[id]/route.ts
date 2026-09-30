@@ -41,7 +41,7 @@ export async function GET(
       tournamentId: id,
       status: { $ne: "CANCELLED" },
     })
-      .select("teamName teamTag slotNumber members status registeredAt")
+      .select("userId teamName teamTag slotNumber members status checkedInAt registeredAt")
       .sort({ slotNumber: 1 })
       .lean();
 

@@ -17,6 +17,7 @@ import {
   Download,
   Flame,
   ArrowRight,
+  Gamepad2,
 } from "lucide-react";
 
 interface RegistrationMember {
@@ -279,13 +280,20 @@ export default function OrganizerManageTournamentPage({
 
           {/* Roster & Participant Slot Grid */}
           <div className="rounded-2xl bg-[#0e111a] border border-white/[0.08] p-6 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="font-bold text-base text-white flex items-center gap-2">
                 <Users className="h-4 w-4 text-violet-400" /> Participant Slot Map ({registrations.length})
               </h3>
-              <Button size="sm" variant="outline" onClick={exportRosterCSV}>
-                <Download className="h-3.5 w-3.5 mr-1" /> Export CSV Roster
-              </Button>
+              <div className="flex items-center gap-2">
+                <Link href={`/tournaments/${id}/room`} target="_blank">
+                  <Button size="sm" variant="secondary">
+                    <Gamepad2 className="h-3.5 w-3.5 mr-1" /> Live Arena Room
+                  </Button>
+                </Link>
+                <Button size="sm" variant="outline" onClick={exportRosterCSV}>
+                  <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+                </Button>
+              </div>
             </div>
 
             {registrations.length === 0 ? (
