@@ -78,7 +78,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Legal & Compliance */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">
               Trust & Legal
@@ -96,7 +96,22 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/refund-policy" className="hover:text-white transition-colors">
-                  Refund Policy
+                  Refund & Cancellation
+                </Link>
+              </li>
+              <li>
+                <Link href="/legality" className="hover:text-white transition-colors">
+                  Skill Gaming Legality
+                </Link>
+              </li>
+              <li>
+                <Link href="/fair-play" className="hover:text-white transition-colors">
+                  Fair Play & Anti-Cheat
+                </Link>
+              </li>
+              <li>
+                <Link href="/responsible-gaming" className="hover:text-white transition-colors">
+                  Responsible Gaming
                 </Link>
               </li>
               <li>
@@ -110,8 +125,13 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500">
-          <p>© {new Date().getFullYear()} BATTLEXA Esports Arena. All rights reserved.</p>
-          <p className="flex items-center gap-1">
+          <div className="space-y-1 text-center sm:text-left">
+            <p>© {new Date().getFullYear()} BATTLEXA Esports Arena. All rights reserved.</p>
+            <p className="text-[10px] text-zinc-600">
+              100% Skill-Based Esports Tournament Platform • Exclusively for Free Fire MAX & BGMI Contenders
+            </p>
+          </div>
+          <p className="flex items-center gap-1 shrink-0">
             Engineered for esports gladiators with <Heart className="h-3 w-3 text-red-500 fill-red-500" />
           </p>
         </div>
