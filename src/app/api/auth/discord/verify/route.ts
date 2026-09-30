@@ -11,9 +11,9 @@ export async function POST(req: NextRequest) {
     const { email, username: inputUsername, discordId, avatar } = body;
 
     let userEmail = email?.toLowerCase();
-    let discordUsername = inputUsername;
-    let userDiscordId = discordId || `discord_${Date.now()}`;
-    let userAvatar = avatar || "";
+    const discordUsername = inputUsername;
+    const userDiscordId = discordId || `discord_${Date.now()}`;
+    const userAvatar = avatar || "";
 
     if (!userEmail && !discordUsername) {
       return NextResponse.json(
