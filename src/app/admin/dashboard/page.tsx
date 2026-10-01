@@ -7,6 +7,7 @@ import { formatCurrency } from "@/lib/utils";
 import {
   ShieldAlert,
   Users,
+  UserCog,
   Trophy,
   Wallet,
   AlertTriangle,
@@ -115,7 +116,26 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Action Center Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="p-6 rounded-2xl bg-[#0e111a] border border-red-500/20 hover:border-red-500/40 transition-all space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-white text-base flex items-center gap-2">
+              <UserCog className="h-4 w-4 text-red-400" /> User Directory
+            </h3>
+            <span className="px-2 py-0.5 rounded text-xs font-black bg-red-950 text-red-300 border border-red-800">
+              Master Control
+            </span>
+          </div>
+          <p className="text-xs text-zinc-400">
+            Create users, edit details, update Free Fire / BGMI IDs, adjust wallet funds, and ban suspicious accounts.
+          </p>
+          <Link href="/admin/users" className="block">
+            <Button variant="danger" size="sm" className="w-full">
+              Manage Users <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          </Link>
+        </div>
+
         <div className="p-6 rounded-2xl bg-[#0e111a] border border-white/[0.08] space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-base">Organizer Applications</h3>

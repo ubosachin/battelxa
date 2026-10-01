@@ -7,6 +7,8 @@ import {
   ShieldAlert,
   LayoutDashboard,
   Users,
+  UserCog,
+  ShieldCheck,
   Trophy,
   Wallet,
   AlertTriangle,
@@ -65,7 +67,8 @@ export default function AdminLayout({
 
   const links = [
     { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "Organizer Approval", href: "/admin/organizers", icon: Users },
+    { label: "User Directory & Management", href: "/admin/users", icon: UserCog },
+    { label: "Organizer Approval", href: "/admin/organizers", icon: ShieldCheck },
     { label: "Payout Clearance", href: "/admin/payouts", icon: Wallet },
     { label: "Tournament Moderation", href: "/admin/tournaments", icon: Trophy },
     { label: "Dispute Resolution", href: "/admin/disputes", icon: AlertTriangle },
