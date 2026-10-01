@@ -16,6 +16,7 @@ import {
   Scale,
   FileText,
 } from "lucide-react";
+import { subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
 interface UserSession {
   id: string;
@@ -39,9 +40,12 @@ export function MobileBottomNav() {
   const [balance, setBalance] = useState<number | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchMe() {
       try {
-        const res = await fetch("/api/auth/me");
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!isMounted) return;
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
@@ -52,10 +56,44 @@ export function MobileBottomNav() {
           setUser(null);
         }
       } catch {
-        setUser(null);
+        if (isMounted) setUser(null);
       }
     }
+
     fetchMe();
+
+    const unsubscribe = subscribeToSyncEvents((payload) => {
+      if (
+        payload.type === "AUTH_SESSION_CHANGED" ||
+        payload.type === "ORGANIZER_STATUS_CHANGED" ||
+        payload.type === "USER_ROLE_UPDATED"
+      ) {
+        fetchMe();
+      }
+    });
+
+    const handleFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchMe();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchMe();
+      }
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
   }, [pathname]);
 
   const triggerHaptic = () => {

@@ -18,6 +18,7 @@ import {
   PlusCircle,
   Users,
 } from "lucide-react";
+import { subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
 interface DashboardData {
   user?: {
@@ -54,12 +55,17 @@ export default function PlayerDashboard() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    async function loadDashboard() {
+    let isMounted = true;
+
+    async function loadDashboard(silent = false) {
       try {
+        if (!silent) setIsLoading(true);
         const [authRes, walletRes] = await Promise.all([
-          fetch("/api/auth/me"),
-          fetch("/api/wallet"),
+          fetch("/api/auth/me", { cache: "no-store" }),
+          fetch("/api/wallet", { cache: "no-store" }),
         ]);
+
+        if (!isMounted) return;
 
         const authData = authRes.ok ? await authRes.json() : null;
         const walletData = walletRes.ok ? await walletRes.json() : null;
@@ -72,12 +78,51 @@ export default function PlayerDashboard() {
           transactions: walletData?.transactions || [],
         });
       } catch (e) {
-        console.error(e);
+        if (!silent) console.error(e);
       } finally {
-        setIsLoading(false);
+        if (!silent && isMounted) {
+          setIsLoading(false);
+        }
       }
     }
-    loadDashboard();
+
+    loadDashboard(false);
+
+    // ⚡ Cross-tab real-time listener
+    const unsubscribe = subscribeToSyncEvents((payload) => {
+      if (
+        payload.type === "ORGANIZER_STATUS_CHANGED" ||
+        payload.type === "AUTH_SESSION_CHANGED" ||
+        payload.type === "USER_ROLE_UPDATED"
+      ) {
+        loadDashboard(true);
+      }
+    });
+
+    // Window focus and visibility listener
+    const handleFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadDashboard(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    // Periodic 4-second live sync
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadDashboard(true);
+      }
+    }, 4000);
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
   }, []);
 
   if (isLoading) {

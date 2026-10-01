@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Alert } from "@/components/ui/Alert";
 import { formatCurrency } from "@/lib/utils";
+import { emitSyncEvent, subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
 interface EnrichedUser {
   _id: string;
@@ -132,9 +133,9 @@ export default function AdminUsersPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (silent = false) => {
     try {
-      setIsLoading(true);
+      if (!silent) setIsLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
         limit: "15",
@@ -143,7 +144,7 @@ export default function AdminUsersPage() {
         status: statusFilter,
       });
 
-      const res = await fetch(`/api/admin/users?${params.toString()}`);
+      const res = await fetch(`/api/admin/users?${params.toString()}`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setUsers(data.users || []);
@@ -151,14 +152,44 @@ export default function AdminUsersPage() {
         if (data.pagination) setTotalPages(data.pagination.totalPages || 1);
       }
     } catch (e) {
-      console.error("Error fetching users:", e);
+      if (!silent) console.error("Error fetching users:", e);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   }, [page, search, roleFilter, statusFilter]);
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(false);
+
+    // Cross-tab real-time sync listener
+    const unsubscribe = subscribeToSyncEvents((payload) => {
+      if (payload.type === "USER_ROLE_UPDATED" || payload.type === "AUTH_SESSION_CHANGED") {
+        fetchUsers(true);
+      }
+    });
+
+    const handleFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchUsers(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    // Background 4-second poll
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchUsers(true);
+      }
+    }, 4000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
   }, [fetchUsers]);
 
   // Open Edit Modal with user data
@@ -210,10 +241,12 @@ export default function AdminUsersPage() {
 
       if (res.ok) {
         setModalMessage({ type: "success", text: "User created successfully!" });
+        emitSyncEvent("USER_ROLE_UPDATED");
+        emitSyncEvent("AUTH_SESSION_CHANGED");
         setTimeout(() => {
           setIsAddModalOpen(false);
-          fetchUsers();
-        }, 1200);
+          fetchUsers(true);
+        }, 1000);
       } else {
         setModalMessage({ type: "error", text: data.error || "Failed to create user" });
       }
@@ -242,10 +275,12 @@ export default function AdminUsersPage() {
 
       if (res.ok) {
         setModalMessage({ type: "success", text: "User details updated successfully!" });
+        emitSyncEvent("USER_ROLE_UPDATED");
+        emitSyncEvent("AUTH_SESSION_CHANGED");
         setTimeout(() => {
           setIsEditModalOpen(false);
-          fetchUsers();
-        }, 1200);
+          fetchUsers(true);
+        }, 1000);
       } else {
         setModalMessage({ type: "error", text: data.error || "Failed to update user" });
       }
@@ -276,10 +311,11 @@ export default function AdminUsersPage() {
 
       if (res.ok) {
         setModalMessage({ type: "success", text: "Wallet adjusted successfully!" });
+        emitSyncEvent("AUTH_SESSION_CHANGED");
         setTimeout(() => {
           setIsWalletModalOpen(false);
-          fetchUsers();
-        }, 1200);
+          fetchUsers(true);
+        }, 1000);
       } else {
         setModalMessage({ type: "error", text: data.error || "Failed to adjust wallet" });
       }
@@ -309,7 +345,9 @@ export default function AdminUsersPage() {
         }),
       });
       if (res.ok) {
-        fetchUsers();
+        emitSyncEvent("USER_ROLE_UPDATED");
+        emitSyncEvent("AUTH_SESSION_CHANGED");
+        fetchUsers(true);
       } else {
         const data = await res.json();
         alert(data.error || "Failed to change user status");
@@ -337,10 +375,15 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lime-950/40 border border-lime-500/30 text-lime-400 text-xs font-mono">
+            <span className="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
+            <span className="font-bold tracking-wider">LIVE SYNC (4s)</span>
+          </div>
+
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchUsers}
+            onClick={() => fetchUsers(false)}
             className="text-xs"
             title="Refresh directory"
           >

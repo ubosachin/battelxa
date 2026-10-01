@@ -19,7 +19,9 @@ import {
   Globe,
   Wallet,
   Edit3,
+  Radio,
 } from "lucide-react";
+import { emitSyncEvent, subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
 interface ExistingProfile {
   _id: string;
@@ -49,31 +51,71 @@ export default function OrganizerApplyPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const loadStatus = async () => {
+  const loadStatus = async (silent = false) => {
     try {
-      setIsLoading(true);
-      const res = await fetch("/api/organizer/apply");
+      if (!silent) setIsLoading(true);
+      const res = await fetch("/api/organizer/apply", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         if (data.profile) {
+          const previousStatus = existingProfile?.status;
           setExistingProfile(data.profile);
           setOrganizationName(data.profile.organizationName || "");
           setDescription(data.profile.description || "");
           setPhone(data.profile.phone || "");
           setWebsite(data.profile.website || "");
           setUpiId(data.profile.upiId || "");
+
+          // If status transitioned from PENDING to APPROVED in real-time!
+          if (previousStatus === "PENDING" && data.profile.status === "APPROVED") {
+            emitSyncEvent("AUTH_SESSION_CHANGED");
+            setMessage({
+              type: "success",
+              text: "🎉 BATTLEXA Administration just approved your organization! You are now an Organization Host.",
+            });
+          }
         }
       }
     } catch (e) {
-      console.error(e);
+      if (!silent) console.error(e);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadStatus();
-  }, []);
+    loadStatus(false);
+
+    // Cross-tab real-time listener
+    const unsubscribe = subscribeToSyncEvents((payload) => {
+      if (payload.type === "ORGANIZER_STATUS_CHANGED") {
+        loadStatus(true);
+      }
+    });
+
+    // Real-time polling every 3 seconds while pending
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadStatus(true);
+      }
+    }, 3000);
+
+    const handleFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadStatus(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
+  }, [existingProfile?.status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +154,11 @@ export default function OrganizerApplyPage() {
       setMessage({
         type: "success",
         text: "Organization application submitted! BATTLEXA administrators will review your credentials.",
+      });
+
+      // ⚡ Emit real-time event so Admin Panel updates in real time!
+      emitSyncEvent("ORGANIZER_APPLICATION_SUBMITTED", {
+        orgId: data.profile?._id,
       });
     } catch {
       setMessage({ type: "error", text: "Network error submitting application" });

@@ -17,6 +17,7 @@ import {
   LogOut,
   LayoutDashboard,
 } from "lucide-react";
+import { subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
 interface UserSession {
   id: string;
@@ -33,21 +34,62 @@ export function Navbar() {
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function checkAuth() {
       try {
-        const res = await fetch("/api/auth/me");
+        const res = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!isMounted) return;
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
           if (data.wallet) {
             setWalletBalance(data.wallet.balance);
           }
+        } else {
+          setUser(null);
         }
       } catch {
-        setUser(null);
+        if (isMounted) setUser(null);
       }
     }
+
     checkAuth();
+
+    // ⚡ Cross-tab real-time listener for instant role/session sync
+    const unsubscribe = subscribeToSyncEvents((payload) => {
+      if (
+        payload.type === "AUTH_SESSION_CHANGED" ||
+        payload.type === "ORGANIZER_STATUS_CHANGED" ||
+        payload.type === "USER_ROLE_UPDATED"
+      ) {
+        checkAuth();
+      }
+    });
+
+    // Window focus and periodic 5-second session check
+    const handleFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        checkAuth();
+      }
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+      clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
+    };
   }, [pathname]);
 
   const handleLogout = async () => {

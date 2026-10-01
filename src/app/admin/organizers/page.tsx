@@ -17,12 +17,15 @@ import {
   ExternalLink,
   MessageSquare,
   Sparkles,
+  Radio,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Alert } from "@/components/ui/Alert";
+import { emitSyncEvent, subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
 interface OrganizerApplicant {
   _id: string;
@@ -71,30 +74,73 @@ export default function AdminOrganizersPage() {
   const [rejectingOrg, setRejectingOrg] = useState<OrganizerApplicant | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [isSubmittingReject, setIsSubmittingReject] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+  const [isLiveActive, setIsLiveActive] = useState(true);
 
-  const loadOrganizers = useCallback(async () => {
+  const loadOrganizers = useCallback(async (silent = false) => {
     try {
-      setIsLoading(true);
+      if (!silent) setIsLoading(true);
       const params = new URLSearchParams();
       if (search.trim()) params.append("search", search.trim());
       if (statusFilter !== "ALL") params.append("status", statusFilter);
 
-      const res = await fetch(`/api/admin/organizers?${params.toString()}`);
+      const res = await fetch(`/api/admin/organizers?${params.toString()}`, {
+        cache: "no-store",
+      });
       if (res.ok) {
         const data = await res.json();
         setOrganizers(data.organizers || []);
         if (data.stats) setStats(data.stats);
+        setLastSyncTime(new Date());
       }
     } catch (e) {
-      console.error(e);
-      setActionMessage({ type: "error", text: "Failed to load organizer applications" });
+      if (!silent) {
+        console.error(e);
+        setActionMessage({ type: "error", text: "Failed to load organizer applications" });
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   }, [search, statusFilter]);
 
+  // Initial load and real-time subscription
   useEffect(() => {
-    loadOrganizers();
+    loadOrganizers(false);
+
+    // Cross-tab real-time listener
+    const unsubscribe = subscribeToSyncEvents((payload) => {
+      if (
+        payload.type === "ORGANIZER_APPLICATION_SUBMITTED" ||
+        payload.type === "ORGANIZER_STATUS_CHANGED"
+      ) {
+        loadOrganizers(true);
+      }
+    });
+
+    // Real-time 3-second background polling
+    const interval = setInterval(() => {
+      // Only poll if tab is visible to be ultra-efficient
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadOrganizers(true);
+      }
+    }, 3000);
+
+    // Re-sync immediately on window focus or visibility change
+    const handleVisibilityOrFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        loadOrganizers(true);
+      }
+    };
+
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    document.addEventListener("visibilitychange", handleVisibilityOrFocus);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+    };
   }, [loadOrganizers]);
 
   const handleUpdateStatus = async (
@@ -102,6 +148,43 @@ export default function AdminOrganizersPage() {
     status: "APPROVED" | "REJECTED" | "SUSPENDED" | "PENDING",
     reason?: string
   ) => {
+    // ⚡ INSTANT OPTIMISTIC UI UPDATE (Zero lag for admin)
+    const prevOrganizers = [...organizers];
+    const prevStats = { ...stats };
+
+    setOrganizers((prev) =>
+      prev.map((org) => {
+        if (org._id === id) {
+          return {
+            ...org,
+            status,
+            verifiedByAdmin: status === "APPROVED",
+            rejectionReason: reason || org.rejectionReason,
+            userId: org.userId
+              ? {
+                  ...org.userId,
+                  role: status === "APPROVED" ? "ORGANIZER" : org.userId.role,
+                }
+              : null,
+          };
+        }
+        return org;
+      })
+    );
+
+    // Optimistically update counts
+    setStats((prev) => {
+      const target = prevOrganizers.find((o) => o._id === id);
+      if (!target) return prev;
+      const oldStatus = target.status.toLowerCase() as "pending" | "approved" | "rejected";
+      const newStatus = status.toLowerCase() as "pending" | "approved" | "rejected";
+
+      const updated = { ...prev };
+      if (oldStatus in updated) (updated as any)[oldStatus] = Math.max(0, (updated as any)[oldStatus] - 1);
+      if (newStatus in updated) (updated as any)[newStatus] = ((updated as any)[newStatus] || 0) + 1;
+      return updated;
+    });
+
     try {
       setActionMessage(null);
       const res = await fetch(`/api/admin/organizers/${id}`, {
@@ -112,16 +195,26 @@ export default function AdminOrganizersPage() {
 
       const data = await res.json();
       if (!res.ok) {
+        // Revert optimistic update on failure
+        setOrganizers(prevOrganizers);
+        setStats(prevStats);
         setActionMessage({ type: "error", text: data.error || "Failed to update organization status." });
         return;
       }
 
+      // ⚡ Broadcast to all open tabs and devices instantly
+      emitSyncEvent("ORGANIZER_STATUS_CHANGED", { orgId: id, status });
+      emitSyncEvent("AUTH_SESSION_CHANGED");
+
       setActionMessage({
         type: "success",
-        text: `Organization ${status === "APPROVED" ? "approved! User granted Host role." : `marked as ${status}.`}`,
+        text: `Organization ${status === "APPROVED" ? "approved! User granted Host role in real time." : `marked as ${status}.`}`,
       });
-      loadOrganizers();
+      loadOrganizers(true);
     } catch {
+      // Revert optimistic update
+      setOrganizers(prevOrganizers);
+      setStats(prevStats);
       setActionMessage({ type: "error", text: "Network error processing organization audit." });
     }
   };
@@ -156,14 +249,21 @@ export default function AdminOrganizersPage() {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => loadOrganizers()}
-          className="self-start sm:self-auto shrink-0"
-        >
-          <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh List
-        </Button>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-lime-950/40 border border-lime-500/30 text-lime-400 text-xs font-mono">
+            <span className="h-2 w-2 rounded-full bg-lime-400 animate-pulse" />
+            <span className="font-bold tracking-wider">LIVE SYNC (3s)</span>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => loadOrganizers(false)}
+            className="shrink-0"
+          >
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Refresh
+          </Button>
+        </div>
       </div>
 
       {actionMessage && (
