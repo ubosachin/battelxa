@@ -8,7 +8,7 @@ const encodedKey = new TextEncoder().encode(JWT_SECRET);
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect /admin routes strictly
+  // Protect /admin routes
   if (pathname.startsWith("/admin")) {
     const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
 
@@ -19,15 +19,13 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      const { payload } = await jwtVerify(token, encodedKey);
-      if (payload.role !== "ADMIN") {
-        // Logged in, but not an admin -> redirect to player dashboard
-        const dashboardUrl = new URL("/player/dashboard", request.url);
-        dashboardUrl.searchParams.set("error", "unauthorized_admin");
-        return NextResponse.redirect(dashboardUrl);
-      }
+      // Verify token integrity
+      await jwtVerify(token, encodedKey);
+      // Valid session token: let the request proceed to AdminLayout
+      // AdminLayout validates the live role from MongoDB via /api/auth/me
+      return NextResponse.next();
     } catch {
-      // Invalid/expired token -> clear and redirect to login
+      // Invalid or expired token -> clear and redirect to login
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("returnTo", pathname);
       const response = NextResponse.redirect(loginUrl);
