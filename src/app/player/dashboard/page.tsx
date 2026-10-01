@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Clock,
   Shield,
+  ShieldCheck,
   PlusCircle,
   Users,
 } from "lucide-react";
@@ -39,6 +40,12 @@ interface DashboardData {
     lockedBalance: number;
     totalWon?: number;
   };
+  organizerProfile?: {
+    organizationName?: string;
+    status?: string;
+    verifiedByAdmin?: boolean;
+    rejectionReason?: string;
+  } | null;
   transactions?: unknown[];
 }
 
@@ -61,6 +68,7 @@ export default function PlayerDashboard() {
           user: authData?.user,
           profile: authData?.profile,
           wallet: walletData?.wallet,
+          organizerProfile: authData?.organizerProfile,
           transactions: walletData?.transactions || [],
         });
       } catch (e) {
@@ -265,6 +273,89 @@ export default function PlayerDashboard() {
                 Edit Game IDs & Profile
               </Button>
             </Link>
+          </div>
+
+          {/* Organization & Host Status Card */}
+          <div className="rounded-xl bg-[#0e111a] border border-white/[0.08] p-5 space-y-3.5 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-white uppercase tracking-tight flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4 text-violet-400" /> Esports Organization
+              </span>
+              {data?.organizerProfile ? (
+                <Badge
+                  variant={
+                    data.organizerProfile.status === "APPROVED"
+                      ? "lime"
+                      : data.organizerProfile.status === "REJECTED"
+                      ? "red"
+                      : "amber"
+                  }
+                >
+                  {data.organizerProfile.status === "APPROVED"
+                    ? "Verified Host"
+                    : data.organizerProfile.status === "REJECTED"
+                    ? "Declined"
+                    : "Pending Audit"}
+                </Badge>
+              ) : (
+                <Badge variant="amber">Not Registered</Badge>
+              )}
+            </div>
+
+            {data?.organizerProfile?.status === "APPROVED" ? (
+              <div className="space-y-2">
+                <p className="text-zinc-300 font-semibold">
+                  {data.organizerProfile.organizationName}
+                </p>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  You are a certified organizer. Host custom rooms, collect entry fees, and run official scrims.
+                </p>
+                <div className="pt-1 flex flex-col gap-2">
+                  <Link href="/organizer/dashboard" className="block">
+                    <Button variant="lime" size="sm" className="w-full text-xs font-bold">
+                      Open Host Console <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            ) : data?.organizerProfile?.status === "PENDING" ? (
+              <div className="space-y-2">
+                <p className="text-amber-300 font-semibold">
+                  {data.organizerProfile.organizationName}
+                </p>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  Your clan application is under admin audit. Expected turnaround is within 24 hours.
+                </p>
+                <Link href="/organizer/apply" className="block pt-1">
+                  <Button variant="outline" size="sm" className="w-full text-xs">
+                    View Audit Status
+                  </Button>
+                </Link>
+              </div>
+            ) : data?.organizerProfile?.status === "REJECTED" ? (
+              <div className="space-y-2">
+                <p className="text-red-300 font-semibold">Application Declined</p>
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  Admin provided feedback on your application. Review notes and re-submit.
+                </p>
+                <Link href="/organizer/apply" className="block pt-1">
+                  <Button variant="danger" size="sm" className="w-full text-xs">
+                    Review Feedback & Re-apply
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-[11px] text-zinc-400 leading-relaxed">
+                  Lead a clan? Register your organization to become an official BATTLEXA host and publish tournaments.
+                </p>
+                <Link href="/organizer/apply" className="block pt-1">
+                  <Button variant="outline" size="sm" className="w-full text-xs font-bold text-violet-300 border-violet-500/30 hover:bg-violet-950/40">
+                    <PlusCircle className="h-3.5 w-3.5 mr-1" /> Register Clan / Org
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

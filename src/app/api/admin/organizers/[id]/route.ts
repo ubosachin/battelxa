@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/db/connect";
 import { OrganizerProfile, AuditLog, User } from "@/lib/db/models";
 import { createNotification } from "@/lib/notifications/notification-service";
+import mongoose from "mongoose";
 
 export async function PATCH(
   req: NextRequest,
@@ -14,7 +15,7 @@ export async function PATCH(
 
     const { status, rejectionReason } = await req.json();
 
-    if (!["APPROVED", "REJECTED", "SUSPENDED"].includes(status)) {
+    if (!["APPROVED", "REJECTED", "SUSPENDED", "PENDING"].includes(status)) {
       return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
     }
 
@@ -22,48 +23,86 @@ export async function PATCH(
     const organizer = await OrganizerProfile.findById(id);
 
     if (!organizer) {
-      return NextResponse.json({ error: "Organizer not found" }, { status: 404 });
+      return NextResponse.json({ error: "Organizer application not found" }, { status: 404 });
     }
 
     organizer.status = status;
-    organizer.verifiedByAdmin = status === "APPROVED";
-    if (rejectionReason) organizer.rejectionReason = rejectionReason;
+
+    if (status === "APPROVED") {
+      organizer.verifiedByAdmin = true;
+      organizer.rejectionReason = ""; // Clear any previous rejection notes
+
+      // Upgrade user role to ORGANIZER so they become Organization Admin / Host
+      await User.findByIdAndUpdate(organizer.userId, { role: "ORGANIZER" });
+    } else if (status === "REJECTED") {
+      organizer.verifiedByAdmin = false;
+      organizer.rejectionReason = rejectionReason || "Application did not meet platform verification standards.";
+
+      // Revert user role to PLAYER if they were in ORGANIZER role
+      const applicantUser = await User.findById(organizer.userId);
+      if (applicantUser && applicantUser.role === "ORGANIZER") {
+        applicantUser.role = "PLAYER";
+        await applicantUser.save();
+      }
+    } else if (status === "SUSPENDED") {
+      organizer.verifiedByAdmin = false;
+
+      // Temporarily demote role to PLAYER while suspended
+      const applicantUser = await User.findById(organizer.userId);
+      if (applicantUser && applicantUser.role === "ORGANIZER") {
+        applicantUser.role = "PLAYER";
+        await applicantUser.save();
+      }
+    } else if (status === "PENDING") {
+      organizer.verifiedByAdmin = false;
+    }
+
     await organizer.save();
 
     // Create Audit Log record
     await AuditLog.create({
-      actorId: session.id,
+      actorId: new mongoose.Types.ObjectId(session.id),
       actorEmail: session.email,
       actorRole: "ADMIN",
       action: `ORGANIZER_${status}`,
       entityType: "OrganizerProfile",
       entityId: id,
-      details: { status, rejectionReason },
+      details: {
+        organizationName: organizer.organizationName,
+        targetUserId: organizer.userId.toString(),
+        status,
+        rejectionReason: organizer.rejectionReason,
+      },
     });
 
-    // Notify Organizer
+    // Notify Applicant User
     await createNotification({
       userId: organizer.userId,
       title:
         status === "APPROVED"
-          ? "Organizer Application Approved! 🎉"
-          : `Organizer Application ${status}`,
+          ? "Organization Approved & Host Role Granted! 🏆"
+          : status === "REJECTED"
+          ? "Organization Application Rejected ⚠️"
+          : `Organization Status Updated: ${status}`,
       message:
         status === "APPROVED"
-          ? "Congratulations! Your host account has been verified. You can now publish tournaments on BATTLEXA."
-          : `Your organizer status has been set to ${status}. Reason: ${
-              rejectionReason || "Compliance check update"
-            }`,
+          ? `Congratulations! "${organizer.organizationName}" has been verified. You are now an Organization Admin and can host Scrims & Tournaments on BATTLEXA.`
+          : status === "REJECTED"
+          ? `Your application for "${organizer.organizationName}" was rejected. Reason: ${
+              organizer.rejectionReason
+            }. You can review your details and reapply.`
+          : `Your organization "${organizer.organizationName}" status has been set to ${status}.`,
       type: "SYSTEM",
-      link: "/organizer/dashboard",
+      link: status === "APPROVED" ? "/organizer/dashboard" : "/organizer/apply",
     });
 
     return NextResponse.json({
-      message: `Organizer status updated to ${status}`,
+      message: `Organization status successfully updated to ${status}.`,
       organizer,
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error updating organizer";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
