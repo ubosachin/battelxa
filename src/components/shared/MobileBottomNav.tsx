@@ -70,7 +70,9 @@ export function MobileBottomNav() {
 
   // Build navigation items based on active role
   const getNavItems = (): NavItem[] => {
-    if (user?.role === "ADMIN") {
+    const role = user?.role ? user.role.toUpperCase() : null;
+
+    if (role === "ADMIN") {
       return [
         { id: "admin-home", label: "Home", href: "/", icon: Flame },
         { id: "admin-tourneys", label: "Tourneys", href: "/admin/tournaments", icon: Trophy },
@@ -80,7 +82,7 @@ export function MobileBottomNav() {
       ];
     }
 
-    if (user?.role === "ORGANIZER") {
+    if (role === "ORGANIZER") {
       return [
         { id: "org-home", label: "Home", href: "/", icon: Flame },
         { id: "org-matches", label: "Matches", href: "/tournaments", icon: Trophy },

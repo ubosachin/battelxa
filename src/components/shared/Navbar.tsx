@@ -68,6 +68,8 @@ export function Navbar() {
     { label: "Organizers", href: "/organizers", icon: Users },
   ];
 
+  const role = user?.role ? user.role.toUpperCase() : null;
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#08090e]/85 backdrop-blur-xl transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
@@ -101,7 +103,7 @@ export function Navbar() {
           {user ? (
             <>
               {/* Wallet Badge if player */}
-              {user.role === "PLAYER" && (
+              {role === "PLAYER" && (
                 <Link
                   href="/player/wallet"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-200 hover:border-lime-500/40 transition-colors"
@@ -116,23 +118,23 @@ export function Navbar() {
               <NotificationBell />
 
               {/* Role specific dashboard link */}
-              {user.role === "ADMIN" && (
+              {role === "ADMIN" && (
                 <Link href="/admin/dashboard">
-                  <Button variant="danger" size="sm">
+                  <Button variant="danger" size="sm" className="shadow-lg shadow-red-950/40">
                     <Shield className="h-3.5 w-3.5 mr-1" /> Admin Panel
                   </Button>
                 </Link>
               )}
 
-              {user.role === "ORGANIZER" && (
+              {role === "ORGANIZER" && (
                 <Link href="/organizer/dashboard">
-                  <Button variant="primary" size="sm">
+                  <Button variant="primary" size="sm" className="shadow-lg shadow-violet-950/40">
                     <LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Host Hub
                   </Button>
                 </Link>
               )}
 
-              {user.role === "PLAYER" && (
+              {role === "PLAYER" && (
                 <Link href="/player/dashboard">
                   <Button variant="secondary" size="sm">
                     <LayoutDashboard className="h-3.5 w-3.5 mr-1" /> Dashboard
@@ -144,11 +146,11 @@ export function Navbar() {
               <div className="flex items-center gap-2 border-l border-zinc-800 pl-3">
                 <Link
                   href={
-                    user.role === "PLAYER"
-                      ? "/player/profile"
-                      : user.role === "ORGANIZER"
+                    role === "ADMIN"
+                      ? "/admin/dashboard"
+                      : role === "ORGANIZER"
                       ? "/organizer/dashboard"
-                      : "/admin/dashboard"
+                      : "/player/profile"
                   }
                   className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
@@ -187,7 +189,7 @@ export function Navbar() {
 
         {/* Mobile App Bar Actions */}
         <div className="flex md:hidden items-center gap-2">
-          {user && user.role === "PLAYER" && (
+          {user && role === "PLAYER" && (
             <Link
               href="/player/wallet"
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-900/90 border border-zinc-700/60 text-xs font-bold text-lime-400 active:scale-95 transition-transform"
@@ -202,11 +204,11 @@ export function Navbar() {
           {user && (
             <Link
               href={
-                user.role === "PLAYER"
-                  ? "/player/profile"
-                  : user.role === "ORGANIZER"
+                role === "ADMIN"
+                  ? "/admin/dashboard"
+                  : role === "ORGANIZER"
                   ? "/organizer/dashboard"
-                  : "/admin/dashboard"
+                  : "/player/profile"
               }
               className="h-8 w-8 rounded-full bg-gradient-to-tr from-violet-600 to-lime-500 flex items-center justify-center text-xs font-black text-black active:scale-95 transition-transform shrink-0"
             >
@@ -250,34 +252,34 @@ export function Navbar() {
                 <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900">
                   <span className="text-xs text-zinc-400">Signed in as</span>
                   <span className="text-xs font-bold text-lime-400">
-                    {user.username} ({user.role})
+                    {user.username} ({role})
                   </span>
                 </div>
-                {user.role === "PLAYER" && (
+                {role === "ADMIN" && (
                   <Link
-                    href="/player/dashboard"
+                    href="/admin/dashboard"
                     onClick={() => setIsOpen(false)}
-                    className="block w-full py-2 text-center text-sm font-semibold rounded-lg bg-zinc-800 text-white"
+                    className="block w-full py-2.5 text-center text-sm font-bold rounded-lg bg-red-600 text-white shadow-lg shadow-red-950/40"
                   >
-                    Player Dashboard
+                    🛡️ Admin Console
                   </Link>
                 )}
-                {user.role === "ORGANIZER" && (
+                {role === "ORGANIZER" && (
                   <Link
                     href="/organizer/dashboard"
                     onClick={() => setIsOpen(false)}
-                    className="block w-full py-2 text-center text-sm font-semibold rounded-lg bg-violet-600 text-white"
+                    className="block w-full py-2.5 text-center text-sm font-semibold rounded-lg bg-violet-600 text-white"
                   >
                     Organizer Dashboard
                   </Link>
                 )}
-                {user.role === "ADMIN" && (
+                {role === "PLAYER" && (
                   <Link
-                    href="/admin/dashboard"
+                    href="/player/dashboard"
                     onClick={() => setIsOpen(false)}
-                    className="block w-full py-2 text-center text-sm font-semibold rounded-lg bg-red-600 text-white"
+                    className="block w-full py-2.5 text-center text-sm font-semibold rounded-lg bg-zinc-800 text-white"
                   >
-                    Admin Console
+                    Player Dashboard
                   </Link>
                 )}
                 <button
