@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Trophy,
@@ -22,28 +22,35 @@ export default function PlayerLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isOnboarded, setIsOnboarded] = useState<boolean>(true);
   const [bannerDismissed, setBannerDismissed] = useState<boolean>(false);
 
   useEffect(() => {
-    async function checkOnboardingStatus() {
+    async function checkAuthAndOnboarding() {
       try {
         const res = await fetch("/api/auth/me");
         if (res.ok) {
           const data = await res.json();
+          if (!data.user) {
+            router.push(`/login?returnTo=${encodeURIComponent(pathname)}`);
+            return;
+          }
           if (data.user && data.user.isOnboarded === false) {
             setIsOnboarded(false);
           }
+        } else {
+          router.push(`/login?returnTo=${encodeURIComponent(pathname)}`);
         }
       } catch (err) {
-        console.error("Failed to check onboarding status", err);
+        console.error("Failed to check auth status", err);
       }
     }
 
     if (pathname !== "/player/onboarding") {
-      checkOnboardingStatus();
+      checkAuthAndOnboarding();
     }
-  }, [pathname]);
+  }, [pathname, router]);
 
   // If on onboarding page, render full screen without player sidebar
   if (pathname === "/player/onboarding") {
