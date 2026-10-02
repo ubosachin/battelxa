@@ -134,7 +134,7 @@ export default function PlayerDashboard() {
     );
   }
 
-  const wallet = data?.wallet || { balance: 50, lockedBalance: 0, totalWon: 0 };
+  const wallet = data?.wallet || { balance: 0, lockedBalance: 0, totalWon: 0 };
   const profile = data?.profile || {
     matchesPlayed: 0,
     matchesWon: 0,

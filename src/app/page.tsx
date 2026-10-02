@@ -17,6 +17,7 @@ import {
   Award,
 } from "lucide-react";
 import { TournamentCard, TournamentCardData } from "@/components/tournament/TournamentCard";
+import { formatCurrency } from "@/lib/utils";
 import { connectToDatabase } from "@/lib/db/connect";
 import { Tournament } from "@/lib/db/models/Tournament";
 import { User } from "@/lib/db/models/User";
@@ -24,7 +25,16 @@ import { OrganizerProfile } from "@/lib/db/models/OrganizerProfile";
 
 export const dynamic = "force-dynamic";
 
-async function getHomePageData(): Promise<{ tournaments: TournamentCardData[]; totalCount: number }> {
+interface HomePageStats {
+  tournaments: TournamentCardData[];
+  totalCount: number;
+  totalUsers: number;
+  totalPrizePool: number;
+  ffPrizePool: number;
+  bgmiPrizePool: number;
+}
+
+async function getHomePageData(): Promise<HomePageStats> {
   try {
     await connectToDatabase();
 
@@ -32,7 +42,14 @@ async function getHomePageData(): Promise<{ tournaments: TournamentCardData[]; t
     void User;
     void OrganizerProfile;
 
-    const [tournaments, totalCount] = await Promise.all([
+    const [
+      tournaments,
+      totalCount,
+      totalUsers,
+      prizeAgg,
+      ffPrizeAgg,
+      bgmiPrizeAgg,
+    ] = await Promise.all([
       Tournament.find({
         status: { $in: ["REGISTRATION_OPEN", "CHECK_IN", "LIVE", "PUBLISHED"] },
       })
@@ -41,6 +58,19 @@ async function getHomePageData(): Promise<{ tournaments: TournamentCardData[]; t
         .populate("organizerId", "organizationName username")
         .lean(),
       Tournament.countDocuments({ status: { $ne: "CANCELLED" } }),
+      User.countDocuments(),
+      Tournament.aggregate([
+        { $match: { status: { $ne: "CANCELLED" } } },
+        { $group: { _id: null, total: { $sum: "$prizePool" } } },
+      ]),
+      Tournament.aggregate([
+        { $match: { gameSlug: "free-fire-max", status: { $ne: "CANCELLED" } } },
+        { $group: { _id: null, total: { $sum: "$prizePool" } } },
+      ]),
+      Tournament.aggregate([
+        { $match: { gameSlug: "bgmi", status: { $ne: "CANCELLED" } } },
+        { $group: { _id: null, total: { $sum: "$prizePool" } } },
+      ]),
     ]);
 
     const serializedTournaments: TournamentCardData[] = (tournaments as unknown as Array<{
@@ -83,18 +113,33 @@ async function getHomePageData(): Promise<{ tournaments: TournamentCardData[]; t
     return {
       tournaments: serializedTournaments,
       totalCount,
+      totalUsers,
+      totalPrizePool: prizeAgg[0]?.total || 0,
+      ffPrizePool: ffPrizeAgg[0]?.total || 0,
+      bgmiPrizePool: bgmiPrizeAgg[0]?.total || 0,
     };
   } catch (error) {
     console.error("HomePage data load failed:", error);
     return {
       tournaments: [],
       totalCount: 0,
+      totalUsers: 0,
+      totalPrizePool: 0,
+      ffPrizePool: 0,
+      bgmiPrizePool: 0,
     };
   }
 }
 
 export default async function HomePage() {
-  const { tournaments, totalCount } = await getHomePageData();
+  const {
+    tournaments,
+    totalCount,
+    totalUsers,
+    totalPrizePool,
+    ffPrizePool,
+    bgmiPrizePool,
+  } = await getHomePageData();
 
   const firstTourney = tournaments[0];
   const tickerText = firstTourney
@@ -194,8 +239,12 @@ export default async function HomePage() {
                   Total Prize Pool
                 </span>
               </div>
-              <div className="text-2xl font-black text-white">₹50,00,000+</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Distributed to date</div>
+              <div className="text-2xl font-black text-white">
+                {totalPrizePool > 0 ? formatCurrency(totalPrizePool) : "₹0"}
+              </div>
+              <div className="text-[11px] text-zinc-500 mt-0.5">
+                {totalPrizePool > 0 ? "Active tournament pools" : "Upcoming tournament pools"}
+              </div>
             </div>
 
             <div className="p-4 rounded-xl bg-[#0e111a]/90 border border-white/[0.06] backdrop-blur-md">
@@ -205,7 +254,7 @@ export default async function HomePage() {
                   Active Contenders
                 </span>
               </div>
-              <div className="text-2xl font-black text-white">25,000+</div>
+              <div className="text-2xl font-black text-white">{totalUsers}</div>
               <div className="text-[11px] text-zinc-500 mt-0.5">Registered warriors</div>
             </div>
 
@@ -216,7 +265,7 @@ export default async function HomePage() {
                   Tournaments
                 </span>
               </div>
-              <div className="text-2xl font-black text-white">1,200+</div>
+              <div className="text-2xl font-black text-white">{totalCount}</div>
               <div className="text-[11px] text-zinc-500 mt-0.5">Matches hosted</div>
             </div>
 
@@ -224,11 +273,11 @@ export default async function HomePage() {
               <div className="flex items-center gap-2 text-emerald-400 mb-1">
                 <ShieldCheck className="h-4 w-4" />
                 <span className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                  Fair Play Rate
+                  Payout Speed
                 </span>
               </div>
-              <div className="text-2xl font-black text-white">99.8%</div>
-              <div className="text-[11px] text-zinc-500 mt-0.5">Anti-cheat resolution</div>
+              <div className="text-2xl font-black text-white">Instant UPI</div>
+              <div className="text-[11px] text-zinc-500 mt-0.5">Automated settlement</div>
             </div>
           </div>
         </div>
@@ -274,8 +323,10 @@ export default async function HomePage() {
 
               <div className="pt-6 flex items-center justify-between border-t border-white/[0.08] mt-6">
                 <div className="text-xs">
-                  <span className="text-zinc-500 block uppercase font-bold text-[10px]">Weekly Prize Pools</span>
-                  <span className="font-extrabold text-amber-400 text-base">₹1,50,000+</span>
+                  <span className="text-zinc-500 block uppercase font-bold text-[10px]">Live Prize Pools</span>
+                  <span className="font-extrabold text-amber-400 text-base">
+                    {ffPrizePool > 0 ? formatCurrency(ffPrizePool) : "Open Lobbies"}
+                  </span>
                 </div>
                 <Link href="/tournaments?game=free-fire-max">
                   <Button variant="primary" size="sm" className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black border-none font-extrabold shadow-lg shadow-orange-950/50">
@@ -304,8 +355,10 @@ export default async function HomePage() {
 
               <div className="pt-6 flex items-center justify-between border-t border-white/[0.08] mt-6">
                 <div className="text-xs">
-                  <span className="text-zinc-500 block uppercase font-bold text-[10px]">Weekly Prize Pools</span>
-                  <span className="font-extrabold text-yellow-400 text-base">₹3,00,000+</span>
+                  <span className="text-zinc-500 block uppercase font-bold text-[10px]">Live Prize Pools</span>
+                  <span className="font-extrabold text-yellow-400 text-base">
+                    {bgmiPrizePool > 0 ? formatCurrency(bgmiPrizePool) : "Open Lobbies"}
+                  </span>
                 </div>
                 <Link href="/tournaments?game=bgmi">
                   <Button variant="primary" size="sm" className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-black border-none font-extrabold shadow-lg shadow-yellow-950/50">

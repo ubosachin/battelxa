@@ -27,25 +27,31 @@ interface AdminStats {
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 240,
-    totalTournaments: 48,
-    activeTournaments: 6,
-    pendingOrganizers: 3,
-    pendingPayouts: 2,
-    pendingDisputes: 1,
-    totalVolume: 350000,
+    totalUsers: 0,
+    totalTournaments: 0,
+    activeTournaments: 0,
+    pendingOrganizers: 0,
+    pendingPayouts: 0,
+    pendingDisputes: 0,
+    totalVolume: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadStats() {
       try {
-        const res = await fetch("/api/admin/stats");
+        const res = await fetch("/api/admin/stats", {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" },
+        });
         if (res.ok) {
           const data = await res.json();
           if (data.stats) setStats(data.stats);
         }
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load admin stats:", e);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadStats();
@@ -76,9 +82,9 @@ export default function AdminDashboardPage() {
             <TrendingUp className="h-4 w-4 text-lime-400" />
           </div>
           <div className="text-2xl font-black text-lime-400">
-            {formatCurrency(stats.totalVolume)}
+            {isLoading ? "—" : formatCurrency(stats.totalVolume)}
           </div>
-          <div className="text-[11px] text-zinc-500">Processed through Razorpay</div>
+          <span className="text-[11px] text-zinc-500">Processed through Razorpay</span>
         </div>
 
         <div className="p-5 rounded-xl bg-[#0e111a] border border-white/[0.08] space-y-2">
@@ -86,8 +92,10 @@ export default function AdminDashboardPage() {
             <span>Registered Users</span>
             <Users className="h-4 w-4 text-violet-400" />
           </div>
-          <div className="text-2xl font-black text-white">{stats.totalUsers}</div>
-          <div className="text-[11px] text-zinc-500">Players & Organizers</div>
+          <div className="text-2xl font-black text-white">
+            {isLoading ? "—" : stats.totalUsers}
+          </div>
+          <span className="text-[11px] text-zinc-500">Players & Organizers</span>
         </div>
 
         <div className="p-5 rounded-xl bg-[#0e111a] border border-white/[0.08] space-y-2">
@@ -96,11 +104,11 @@ export default function AdminDashboardPage() {
             <Trophy className="h-4 w-4 text-amber-400" />
           </div>
           <div className="text-2xl font-black text-white">
-            {stats.totalTournaments}
+            {isLoading ? "—" : stats.totalTournaments}
           </div>
-          <div className="text-[11px] text-zinc-500">
-            {stats.activeTournaments} active now
-          </div>
+          <span className="text-[11px] text-zinc-500">
+            {isLoading ? "Checking active..." : `${stats.activeTournaments} active now`}
+          </span>
         </div>
 
         <div className="p-5 rounded-xl bg-[#0e111a] border border-white/[0.08] space-y-2">
@@ -109,9 +117,9 @@ export default function AdminDashboardPage() {
             <Wallet className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-amber-400">
-            {stats.pendingPayouts}
+            {isLoading ? "—" : stats.pendingPayouts}
           </div>
-          <div className="text-[11px] text-zinc-500">Awaiting bank transfer</div>
+          <span className="text-[11px] text-zinc-500">Awaiting disbursement</span>
         </div>
       </div>
 

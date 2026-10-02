@@ -30,25 +30,48 @@ interface OrganizerTournamentItem {
   startTime: string;
 }
 
+interface OrganizerStats {
+  totalCupsHosted: number;
+  totalPrizeDistributed: number;
+  activeGladiators: number;
+  rating: number;
+  organizationName: string;
+  verified: boolean;
+}
+
 export default function OrganizerDashboard() {
   const [tournaments, setTournaments] = useState<OrganizerTournamentItem[]>([]);
+  const [stats, setStats] = useState<OrganizerStats>({
+    totalCupsHosted: 0,
+    totalPrizeDistributed: 0,
+    activeGladiators: 0,
+    rating: 5.0,
+    organizationName: "",
+    verified: false,
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadOrganizerTournaments() {
+    async function loadOrganizerData() {
       try {
-        const res = await fetch("/api/tournaments?limit=20");
+        const res = await fetch("/api/organizer/stats", {
+          cache: "no-store",
+          headers: { "Cache-Control": "no-cache" },
+        });
         if (res.ok) {
           const data = await res.json();
           setTournaments(data.tournaments || []);
+          if (data.stats) {
+            setStats(data.stats);
+          }
         }
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load organizer data:", e);
       } finally {
         setIsLoading(false);
       }
     }
-    loadOrganizerTournaments();
+    loadOrganizerData();
   }, []);
 
   return (
@@ -57,7 +80,8 @@ export default function OrganizerDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-violet-950/70 via-[#0e111a] to-zinc-950 border border-violet-500/30">
         <div>
           <span className="text-xs font-bold text-lime-400 uppercase tracking-widest flex items-center gap-1.5">
-            <ShieldCheck className="h-4 w-4" /> Verified Tournament Host
+            <ShieldCheck className="h-4 w-4" />{" "}
+            {stats.organizationName ? `${stats.organizationName} • Verified Host` : "Verified Tournament Host"}
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight mt-1">
             Organizer Command Center
@@ -74,38 +98,58 @@ export default function OrganizerDashboard() {
         </Link>
       </div>
 
-      {/* Metric Cards */}
+      {/* Live Metric Cards (Zero Hardcoded Data) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-5 rounded-xl bg-[#0e111a] border border-white/[0.08] space-y-1">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Total Cups Hosted
           </span>
-          <div className="text-2xl font-black text-white">12</div>
-          <span className="text-[11px] text-zinc-500">Free Fire & BGMI</span>
+          <div className="text-2xl font-black text-white">
+            {isLoading ? "—" : stats.totalCupsHosted}
+          </div>
+          <span className="text-[11px] text-zinc-500">
+            {stats.totalCupsHosted === 0 ? "No cups hosted yet" : `${stats.totalCupsHosted} tournaments`}
+          </span>
         </div>
 
         <div className="p-5 rounded-xl bg-[#0e111a] border border-white/[0.08] space-y-1">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Total Prize Distributed
           </span>
-          <div className="text-2xl font-black text-lime-400">₹85,000</div>
-          <span className="text-[11px] text-zinc-500">100% verified</span>
+          <div className="text-2xl font-black text-lime-400">
+            {isLoading ? "—" : formatCurrency(stats.totalPrizeDistributed)}
+          </div>
+          <span className="text-[11px] text-zinc-500">
+            {stats.totalPrizeDistributed === 0 ? "No prize disbursed yet" : "100% verified"}
+          </span>
         </div>
 
         <div className="p-5 rounded-xl bg-[#0e111a] border border-white/[0.08] space-y-1">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Active Gladiators
           </span>
-          <div className="text-2xl font-black text-violet-400">480+</div>
-          <span className="text-[11px] text-zinc-500">Across lobbies</span>
+          <div className="text-2xl font-black text-violet-400">
+            {isLoading ? "—" : stats.activeGladiators}
+          </div>
+          <span className="text-[11px] text-zinc-500">
+            {stats.activeGladiators === 0 ? "No registrations yet" : "Across your lobbies"}
+          </span>
         </div>
 
         <div className="p-5 rounded-xl bg-[#0e111a] border border-white/[0.08] space-y-1">
           <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
             Host Rating
           </span>
-          <div className="text-2xl font-black text-amber-400">4.9 / 5.0</div>
-          <span className="text-[11px] text-zinc-500">Verified by players</span>
+          <div className="text-2xl font-black text-amber-400">
+            {isLoading
+              ? "—"
+              : stats.totalCupsHosted > 0
+              ? `${stats.rating.toFixed(1)} / 5.0`
+              : "New Host"}
+          </div>
+          <span className="text-[11px] text-zinc-500">
+            {stats.totalCupsHosted > 0 ? "Verified by players" : "Initial standing"}
+          </span>
         </div>
       </div>
 
