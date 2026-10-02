@@ -78,6 +78,9 @@ export function GameLogo({
     cleanKey === "pubg" ||
     cleanKey.includes("bgmi") ||
     cleanKey.includes("battleground");
+  const isCOD =
+    cleanKey.includes("cod") ||
+    cleanKey.includes("call-of-duty");
 
   // Responsive dimensions
   const iconDimensions: Record<GameSize, string> = {
@@ -147,8 +150,8 @@ export function GameLogo({
         borderGlow: "border-amber-500/30",
         shadowGlow: "shadow-[0_2px_12px_rgba(249,115,22,0.25)]",
         subColor: "text-amber-400/90",
-        officialLogoUrl:
-          "https://upload.wikimedia.org/wikipedia/en/thumb/0/0e/Garena_Free_Fire_MAX_logo.png/500px-Garena_Free_Fire_MAX_logo.png",
+        defaultIcon: "/games/free-fire-icon.svg",
+        officialLogoUrl: "/games/free-fire-max.svg",
       }
     : isBGMI
     ? {
@@ -160,8 +163,21 @@ export function GameLogo({
         borderGlow: "border-yellow-500/30",
         shadowGlow: "shadow-[0_2px_12px_rgba(234,179,8,0.25)]",
         subColor: "text-amber-400",
-        officialLogoUrl:
-          "https://upload.wikimedia.org/wikipedia/en/thumb/1/1a/Battlegrounds_Mobile_India_logo.png/500px-Battlegrounds_Mobile_India_logo.png",
+        defaultIcon: "/games/bgmi-icon.svg",
+        officialLogoUrl: "/games/bgmi.svg",
+      }
+    : isCOD
+    ? {
+        title: "CALL OF DUTY",
+        tag: "MOBILE",
+        tagBg: "bg-emerald-500 text-black font-black",
+        subtitle: developer || "ACTIVISION",
+        gradientBg: "from-emerald-950/70 via-zinc-900 to-zinc-900",
+        borderGlow: "border-emerald-500/30",
+        shadowGlow: "shadow-[0_2px_12px_rgba(16,185,129,0.25)]",
+        subColor: "text-emerald-400",
+        defaultIcon: "/games/cod-mobile-icon.svg",
+        officialLogoUrl: "/games/cod-mobile-icon.svg",
       }
     : {
         title:
@@ -176,6 +192,7 @@ export function GameLogo({
         borderGlow: "border-violet-500/30",
         shadowGlow: "shadow-[0_2px_12px_rgba(139,92,246,0.25)]",
         subColor: "text-violet-400",
+        defaultIcon: iconUrl || "",
         officialLogoUrl: iconUrl || "",
       };
 
@@ -208,22 +225,24 @@ export function GameLogo({
 
   // Render authentic vector emblem or real DB image
   const renderIconBox = (dimClass: string) => {
-    // If a custom image URL from DB is passed and loads fine
-    if (iconUrl && !iconError) {
+    const iconSource = iconUrl || gameInfo.defaultIcon;
+
+    // If an icon asset is available and hasn't errored, display the official crisp image
+    if (iconSource && !iconError) {
       return (
         <div
           className={cn(
-            "relative overflow-hidden flex items-center justify-center shrink-0 border border-white/10 bg-zinc-900",
+            "relative overflow-hidden flex items-center justify-center shrink-0 border border-white/10 bg-zinc-950 rounded-lg p-0.5",
             dimClass
           )}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={iconUrl}
-            alt={gameInfo.title}
-            className="w-full h-full object-cover"
+            src={iconSource}
+            alt={`${gameInfo.title} Icon`}
+            className="w-full h-full object-contain filter drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]"
             onError={() => setIconError(true)}
-            loading="lazy"
+            loading="eager"
           />
         </div>
       );

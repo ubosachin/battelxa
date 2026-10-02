@@ -70,12 +70,12 @@ export function NotificationBell() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer"
+        className="relative flex items-center justify-center w-9 h-9 rounded-xl text-zinc-300 hover:text-white bg-zinc-900/60 hover:bg-zinc-800/90 border border-white/[0.08] hover:border-white/20 transition-all cursor-pointer"
         aria-label="Notifications"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-4 w-4 text-zinc-300" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-lime-500 text-[10px] font-bold text-black ring-2 ring-[#08090e]">
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-lime-400 text-[9px] font-black text-black ring-2 ring-[#08090e] shadow-sm shadow-lime-500/40">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
