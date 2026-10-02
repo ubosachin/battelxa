@@ -291,8 +291,8 @@ export default function CreateTournamentPage() {
           />
         </div>
 
-        <div className="pt-2 flex justify-end">
-          <Button type="submit" variant="lime" size="lg" isLoading={isLoading}>
+        <div className="pt-2 flex flex-col sm:flex-row justify-end">
+          <Button type="submit" variant="lime" size="lg" isLoading={isLoading} className="w-full sm:w-auto font-black">
             <Sparkles className="h-4 w-4 mr-1.5" /> Publish Tournament Arena
           </Button>
         </div>

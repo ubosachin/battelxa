@@ -216,7 +216,7 @@ export default function PlayerWalletPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight">
@@ -229,20 +229,20 @@ export default function PlayerWalletPage() {
 
         <button
           onClick={() => setRefreshIndex((prev) => prev + 1)}
-          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer self-start sm:self-auto"
         >
           <RefreshCw className="h-3.5 w-3.5" /> Refresh ledger
         </button>
       </div>
 
       {/* Wallet Balance Hero Card */}
-      <div className="rounded-2xl bg-gradient-to-r from-violet-950/80 via-[#0e111a] to-lime-950/40 border border-violet-500/30 p-6 lg:p-8 space-y-6">
+      <div className="rounded-2xl bg-gradient-to-r from-violet-950/80 via-[#0e111a] to-lime-950/40 border border-violet-500/30 p-5 sm:p-6 lg:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="space-y-1">
             <span className="text-xs font-bold uppercase tracking-wider text-lime-400 flex items-center gap-1.5">
               <ShieldCheck className="h-4 w-4" /> Available Battle Balance
             </span>
-            <div className="text-4xl sm:text-5xl font-black text-white">
+            <div className="text-3xl sm:text-5xl font-black text-white">
               {formatCurrency(wallet?.balance || 0)}
             </div>
             <p className="text-xs text-zinc-400">
@@ -253,11 +253,12 @@ export default function PlayerWalletPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <Button
               variant="lime"
               size="lg"
               onClick={() => setIsDepositOpen(true)}
+              className="w-full sm:w-auto"
             >
               <ArrowDownLeft className="h-4 w-4 mr-1 text-black" /> Add Cash
             </Button>
@@ -265,6 +266,7 @@ export default function PlayerWalletPage() {
               variant="outline"
               size="lg"
               onClick={() => setIsWithdrawOpen(true)}
+              className="w-full sm:w-auto"
             >
               <ArrowUpRight className="h-4 w-4 mr-1 text-violet-400" /> Withdraw Winnings
             </Button>
@@ -272,7 +274,7 @@ export default function PlayerWalletPage() {
         </div>
 
         {/* Stats strip */}
-        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-800/80 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-4 border-t border-zinc-800/80 text-xs">
           <div>
             <span className="text-zinc-500 uppercase font-semibold text-[10px] block">
               Total Deposited

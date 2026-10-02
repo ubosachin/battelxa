@@ -70,10 +70,10 @@ export default function OrganizerLayout({
   }, []);
 
   const links = [
-    { label: "Organizer Hub", href: "/organizer/dashboard", icon: LayoutDashboard },
-    { label: "Host New Cup", href: "/organizer/tournaments/create", icon: PlusCircle },
-    { label: "Host Payouts", href: "/organizer/payouts", icon: Wallet },
-    { label: "Verification Status", href: "/organizer/apply", icon: ShieldCheck },
+    { label: "Organizer Hub", shortLabel: "Host Hub", href: "/organizer/dashboard", icon: LayoutDashboard },
+    { label: "Host New Cup", shortLabel: "Host Cup", href: "/organizer/tournaments/create", icon: PlusCircle },
+    { label: "Host Payouts", shortLabel: "Payouts", href: "/organizer/payouts", icon: Wallet },
+    { label: "Verification Status", shortLabel: "Status", href: "/organizer/apply", icon: ShieldCheck },
   ];
 
   // Allow everyone to see the application page /organizer/apply
@@ -177,14 +177,15 @@ export default function OrganizerLayout({
   // 4. Authorized Organizer (or applying)
   return (
     <div className="min-h-screen bg-[#08090e] flex flex-col md:flex-row">
-      <aside className="w-full md:w-64 bg-[#0c0f18] border-r border-zinc-800/80 p-4 space-y-6 shrink-0">
-        <div className="px-3 pt-2">
+      {/* Desktop Sidebar (Sticky, Left) */}
+      <aside className="hidden md:flex flex-col w-64 bg-[#0c0f18] border-r border-zinc-800/80 p-4 space-y-6 shrink-0 md:sticky md:top-20 md:h-[calc(100vh-5rem)] overflow-y-auto">
+        <div className="px-3 pt-1">
           <span className="text-[10px] font-black uppercase tracking-widest text-violet-400">
             Host Control
           </span>
-          <h2 className="text-lg font-black text-white">Organizer Console</h2>
+          <h2 className="text-lg font-black text-white mt-0.5">Organizer Console</h2>
           {username && (
-            <span className="text-[10px] font-mono text-zinc-500 block truncate">
+            <span className="text-[11px] font-mono text-zinc-500 block truncate mt-0.5">
               Host: {username}
             </span>
           )}
@@ -200,30 +201,55 @@ export default function OrganizerLayout({
                 href={link.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${
                   isActive
-                    ? "bg-violet-600 text-white shadow-lg shadow-violet-900/30"
+                    ? "bg-violet-600 text-white shadow-md shadow-violet-900/30"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                {link.label}
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{link.label}</span>
               </Link>
             );
           })}
         </nav>
       </aside>
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+      {/* Mobile Sticky Sub-Navbar (Horizontal scrolling pills, 48px height) */}
+      <div className="md:hidden sticky top-16 z-30 w-full bg-[#0c0f18]/95 backdrop-blur-xl border-b border-violet-950/50 shadow-md">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-2">
+          {links.map((link) => {
+            const Icon = link.icon;
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 active:scale-95 ${
+                  isActive
+                    ? "bg-violet-600 text-white shadow-[0_0_12px_rgba(139,92,246,0.5)] border border-violet-500"
+                    : "bg-zinc-900/90 text-zinc-400 hover:text-white border border-white/5 hover:bg-zinc-800"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{link.shortLabel}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-8">
         <div className="max-w-6xl mx-auto space-y-6">
           {!isVerified && !isApplyPage && (
             <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-600/40 text-amber-200 text-xs flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-amber-400" />
+                <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
                 <span>
                   Your organizer application is currently under admin compliance review. Once approved, you can publish paid tournaments.
                 </span>
               </div>
               <Link href="/organizer/apply">
-                <button className="underline font-bold text-amber-300 cursor-pointer">
+                <button className="underline font-bold text-amber-300 cursor-pointer shrink-0 ml-2">
                   View Status
                 </button>
               </Link>

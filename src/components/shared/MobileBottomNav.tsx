@@ -9,6 +9,7 @@ import {
   Gamepad2,
   Wallet,
   User,
+  Users,
   LayoutDashboard,
   PlusCircle,
   CreditCard,
@@ -113,7 +114,7 @@ export function MobileBottomNav() {
     if (role === "ADMIN") {
       return [
         { id: "admin-home", label: "Home", href: "/", icon: Flame },
-        { id: "admin-tourneys", label: "Tourneys", href: "/admin/tournaments", icon: Trophy },
+        { id: "admin-users", label: "Users", href: "/admin/users", icon: Users },
         { id: "admin-dash", label: "Admin", href: "/admin/dashboard", icon: ShieldAlert },
         { id: "admin-disputes", label: "Disputes", href: "/admin/disputes", icon: Scale },
         { id: "admin-logs", label: "Logs", href: "/admin/audit-logs", icon: FileText },
@@ -157,6 +158,21 @@ export function MobileBottomNav() {
   };
 
   const navItems = getNavItems();
+  const role = user?.role ? user.role.toUpperCase() : null;
+
+  const activeColorClass =
+    role === "ADMIN"
+      ? "text-red-400 font-bold"
+      : role === "ORGANIZER"
+      ? "text-violet-400 font-bold"
+      : "text-lime-400 font-bold";
+
+  const activeIndicatorClass =
+    role === "ADMIN"
+      ? "bg-red-500 shadow-[0_0_8px_#ef4444]"
+      : role === "ORGANIZER"
+      ? "bg-violet-500 shadow-[0_0_8px_#8b5cf6]"
+      : "bg-lime-400 shadow-[0_0_8px_#84cc16]";
 
   return (
     <nav
@@ -169,7 +185,7 @@ export function MobileBottomNav() {
           const isActive =
             item.href === "/"
               ? pathname === "/"
-              : pathname.startsWith(item.href);
+              : pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
 
           if (item.isHighlight) {
             return (
@@ -196,13 +212,13 @@ export function MobileBottomNav() {
               onClick={triggerHaptic}
               className={`flex flex-col items-center justify-center py-1 transition-all relative ${
                 isActive
-                  ? "text-lime-400"
+                  ? activeColorClass
                   : "text-zinc-400 hover:text-zinc-200 active:scale-95"
               }`}
             >
               {/* Active top glow indicator */}
               {isActive && (
-                <span className="absolute -top-1.5 w-6 h-0.5 rounded-full bg-lime-400 shadow-[0_0_8px_#84cc16]" />
+                <span className={`absolute -top-1.5 w-6 h-0.5 rounded-full ${activeIndicatorClass}`} />
               )}
 
               <div className="relative">
@@ -219,8 +235,8 @@ export function MobileBottomNav() {
               </div>
 
               <span
-                className={`text-[10px] mt-1 tracking-tight font-medium ${
-                  isActive ? "font-bold text-lime-400" : "text-zinc-400"
+                className={`text-[10px] mt-1 tracking-tight ${
+                  isActive ? "font-bold" : "text-zinc-400 font-medium"
                 }`}
               >
                 {item.label}

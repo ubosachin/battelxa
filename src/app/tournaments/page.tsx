@@ -83,7 +83,7 @@ export default function TournamentsDiscoveryPage() {
   };
 
   return (
-    <div className="min-h-screen py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="min-h-screen py-6 sm:py-10 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-lime-400">

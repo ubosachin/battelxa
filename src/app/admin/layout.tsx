@@ -66,13 +66,13 @@ export default function AdminLayout({
   }, []);
 
   const links = [
-    { label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
-    { label: "User Directory & Management", href: "/admin/users", icon: UserCog },
-    { label: "Organizer Approval", href: "/admin/organizers", icon: ShieldCheck },
-    { label: "Payout Clearance", href: "/admin/payouts", icon: Wallet },
-    { label: "Tournament Moderation", href: "/admin/tournaments", icon: Trophy },
-    { label: "Dispute Resolution", href: "/admin/disputes", icon: AlertTriangle },
-    { label: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
+    { label: "Overview", shortLabel: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+    { label: "User Directory & Management", shortLabel: "Users", href: "/admin/users", icon: UserCog },
+    { label: "Organizer Approval", shortLabel: "Organizers", href: "/admin/organizers", icon: ShieldCheck },
+    { label: "Payout Clearance", shortLabel: "Payouts", href: "/admin/payouts", icon: Wallet },
+    { label: "Tournament Moderation", shortLabel: "Tournaments", href: "/admin/tournaments", icon: Trophy },
+    { label: "Dispute Resolution", shortLabel: "Disputes", href: "/admin/disputes", icon: AlertTriangle },
+    { label: "Audit Logs", shortLabel: "Logs", href: "/admin/audit-logs", icon: FileText },
   ];
 
   // 1. Loading State
@@ -168,16 +168,17 @@ export default function AdminLayout({
   // 4. Authorized Admin State
   return (
     <div className="min-h-screen bg-[#06070a] flex flex-col md:flex-row">
-      <aside className="w-full md:w-64 bg-[#0a0c13] border-r border-red-950/40 p-4 space-y-6 shrink-0">
-        <div className="px-3 pt-2">
-          <div className="flex items-center gap-2">
+      {/* Desktop Sidebar (Sticky, Left) */}
+      <aside className="hidden md:flex flex-col w-64 bg-[#0a0c13] border-r border-red-950/40 p-4 space-y-6 shrink-0 md:sticky md:top-20 md:h-[calc(100vh-5rem)] overflow-y-auto">
+        <div className="px-3 pt-1">
+          <div className="flex items-center gap-1.5">
             <ShieldAlert className="h-4 w-4 text-red-500" />
             <span className="text-[10px] font-black uppercase tracking-widest text-red-500">
               Admin Ops
             </span>
           </div>
-          <h2 className="text-lg font-black text-white">Battlexa Authority</h2>
-          <span className="text-[10px] font-mono text-zinc-500 block truncate">
+          <h2 className="text-lg font-black text-white mt-0.5">Battlexa Authority</h2>
+          <span className="text-[11px] font-mono text-zinc-500 block truncate mt-0.5">
             Admin: {currentUsername}
           </span>
         </div>
@@ -192,19 +193,44 @@ export default function AdminLayout({
                 href={link.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all ${
                   isActive
-                    ? "bg-red-600 text-white shadow-lg shadow-red-950/40"
+                    ? "bg-red-600 text-white shadow-md shadow-red-950/40"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                {link.label}
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{link.label}</span>
               </Link>
             );
           })}
         </nav>
       </aside>
 
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+      {/* Mobile Sticky Sub-Navbar (Horizontal scrolling pills, 48px height) */}
+      <div className="md:hidden sticky top-16 z-30 w-full bg-[#0a0c13]/95 backdrop-blur-xl border-b border-red-950/50 shadow-md">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-2">
+          {links.map((link) => {
+            const Icon = link.icon;
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 active:scale-95 ${
+                  isActive
+                    ? "bg-red-600 text-white shadow-[0_0_12px_rgba(239,68,68,0.5)] border border-red-500"
+                    : "bg-zinc-900/90 text-zinc-400 hover:text-white border border-white/5 hover:bg-zinc-800"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{link.shortLabel}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-8">
         <div className="max-w-6xl mx-auto space-y-6">
           {children}
         </div>
