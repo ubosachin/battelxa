@@ -20,8 +20,11 @@
     color: var(--foreground);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     overflow-x: hidden;
-    selection-background-color: #8b5cf6;
-    selection-color: #ffffff;
+  }
+
+  ::selection {
+    background-color: #8b5cf6;
+    color: #ffffff;
   }
 
   /* Custom scrollbar for modern gaming feel */
@@ -70,18 +73,21 @@
 .text-gradient-violet {
   background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 50%, #6366f1 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-gradient-lime {
   background: linear-gradient(135deg, #ecfccb 0%, #84cc16 60%, #4d7c0f 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-gradient-fire {
   background: linear-gradient(135deg, #fed7aa 0%, #f97316 50%, #dc2626 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
