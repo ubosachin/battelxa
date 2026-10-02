@@ -150,8 +150,8 @@ export function GameLogo({
         borderGlow: "border-amber-500/30",
         shadowGlow: "shadow-[0_2px_12px_rgba(249,115,22,0.25)]",
         subColor: "text-amber-400/90",
-        defaultIcon: "/games/free-fire-icon.svg",
-        officialLogoUrl: "/games/free-fire-max.svg",
+        defaultIcon: "/games/free-fire-icon.png",
+        officialLogoUrl: "/games/free-fire-max.png",
       }
     : isBGMI
     ? {
@@ -163,21 +163,21 @@ export function GameLogo({
         borderGlow: "border-yellow-500/30",
         shadowGlow: "shadow-[0_2px_12px_rgba(234,179,8,0.25)]",
         subColor: "text-amber-400",
-        defaultIcon: "/games/bgmi-icon.svg",
-        officialLogoUrl: "/games/bgmi.svg",
+        defaultIcon: "/games/bgmi-icon.png",
+        officialLogoUrl: "/games/bgmi.png",
       }
     : isCOD
     ? {
         title: "CALL OF DUTY",
         tag: "MOBILE",
-        tagBg: "bg-emerald-500 text-black font-black",
+        tagBg: "bg-amber-500 text-black font-black",
         subtitle: developer || "ACTIVISION",
-        gradientBg: "from-emerald-950/70 via-zinc-900 to-zinc-900",
-        borderGlow: "border-emerald-500/30",
-        shadowGlow: "shadow-[0_2px_12px_rgba(16,185,129,0.25)]",
-        subColor: "text-emerald-400",
-        defaultIcon: "/games/cod-mobile-icon.svg",
-        officialLogoUrl: "/games/cod-mobile-icon.svg",
+        gradientBg: "from-yellow-950/70 via-zinc-900 to-zinc-900",
+        borderGlow: "border-yellow-500/30",
+        shadowGlow: "shadow-[0_2px_12px_rgba(234,179,8,0.25)]",
+        subColor: "text-amber-400",
+        defaultIcon: "/games/cod-mobile-icon.png",
+        officialLogoUrl: "/games/cod-mobile.png",
       }
     : {
         title:
@@ -213,8 +213,14 @@ export function GameLogo({
           src={activeImageUrl}
           alt={`${gameInfo.title} Logo`}
           className={cn(
-            fullDimensions[size],
-            "object-contain filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+            isBGMI
+              ? "h-10 sm:h-12 w-auto aspect-square rounded-xl object-cover border border-amber-500/30 shadow-md"
+              : isCOD
+              ? "h-10 sm:h-12 w-auto aspect-square rounded-xl object-contain border border-yellow-500/30 shadow-md p-1 bg-black/40"
+              : isFF
+              ? "h-9 sm:h-11 max-w-[180px] w-auto rounded-lg object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+              : fullDimensions[size],
+            !isBGMI && !isFF && !isCOD && "object-contain filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
           )}
           onError={() => setImgError(true)}
           loading="eager"
@@ -232,7 +238,8 @@ export function GameLogo({
       return (
         <div
           className={cn(
-            "relative overflow-hidden flex items-center justify-center shrink-0 border border-white/10 bg-zinc-950 rounded-lg p-0.5",
+            "relative overflow-hidden flex items-center justify-center shrink-0 border border-white/10 bg-zinc-950 rounded-lg",
+            isBGMI || isFF ? "p-0" : isCOD ? "p-0.5" : "p-0.5",
             dimClass
           )}
         >
@@ -240,7 +247,10 @@ export function GameLogo({
           <img
             src={iconSource}
             alt={`${gameInfo.title} Icon`}
-            className="w-full h-full object-contain filter drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]"
+            className={cn(
+              "w-full h-full filter drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]",
+              isBGMI || isFF ? "object-cover" : "object-contain"
+            )}
             onError={() => setIconError(true)}
             loading="eager"
           />
