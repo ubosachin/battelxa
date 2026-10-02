@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db/connect";
-import { Tournament, Registration, User } from "@/lib/db/models";
+import { Tournament, Registration, User, OrganizerProfile } from "@/lib/db/models";
 import { getSession } from "@/lib/auth/session";
 
 export async function GET(
@@ -82,11 +82,18 @@ export async function PATCH(
   try {
     const { id } = await params;
     const session = await getSession();
-    if (!session || (session.role !== "ORGANIZER" && session.role !== "ADMIN")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectToDatabase();
+    const org = await OrganizerProfile.findOne({ userId: session.id });
+    const isApprovedOrg = Boolean(org && (org.status === "APPROVED" || org.verifiedByAdmin));
+    const isAuthorized = session.role === "ADMIN" || session.role === "ORGANIZER" || isApprovedOrg;
+
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
     const tournament = await Tournament.findById(id);
 
     if (!tournament) {

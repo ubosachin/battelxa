@@ -19,7 +19,12 @@ export async function POST(
     const { id: matchId } = await params;
     const session = await requireAuth();
 
-    if (session.role !== "ORGANIZER" && session.role !== "ADMIN") {
+    await connectToDatabase();
+    const { OrganizerProfile } = await import("@/lib/db/models");
+    const org = await OrganizerProfile.findOne({ userId: session.id });
+    const isApprovedOrg = Boolean(org && (org.status === "APPROVED" || org.verifiedByAdmin));
+
+    if (session.role !== "ORGANIZER" && session.role !== "ADMIN" && !isApprovedOrg) {
       return NextResponse.json(
         { error: "Only organizers or admins can submit official results" },
         { status: 403 }

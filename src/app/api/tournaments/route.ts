@@ -93,18 +93,25 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ORGANIZER" && session.role !== "ADMIN")) {
-      return NextResponse.json(
-        { error: "Only organizers or admins can host tournaments" },
-        { status: 403 }
-      );
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectToDatabase();
 
-    // Verify organizer approval status if role is ORGANIZER
-    if (session.role === "ORGANIZER") {
-      const org = await OrganizerProfile.findOne({ userId: session.id });
+    const org = await OrganizerProfile.findOne({ userId: session.id });
+    const isApprovedOrg = Boolean(org && (org.status === "APPROVED" || org.verifiedByAdmin));
+    const isAuthorized = session.role === "ADMIN" || session.role === "ORGANIZER" || isApprovedOrg;
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: "Only verified organizers or admins can host tournaments" },
+        { status: 403 }
+      );
+    }
+
+    // Verify organizer approval status if not admin
+    if (session.role !== "ADMIN") {
       if (!org || (!org.verifiedByAdmin && org.status !== "APPROVED")) {
         return NextResponse.json(
           {
@@ -114,6 +121,9 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
+
+      // Ensure user document in DB is set to ORGANIZER role
+      await User.findByIdAndUpdate(session.id, { role: "ORGANIZER" });
     }
 
     const body = await req.json();

@@ -13,8 +13,10 @@ import {
   Lock,
   ArrowRight,
   Flame,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
 export default function OrganizerLayout({
   children,
@@ -28,46 +30,83 @@ export default function OrganizerLayout({
   const [authStatus, setAuthStatus] = useState<"CHECKING" | "AUTHORIZED" | "PLAYER_RESTRICTED" | "UNAUTHENTICATED">("CHECKING");
   const [isVerified, setIsVerified] = useState<boolean>(true);
   const [username, setUsername] = useState<string>("");
+  const [isRechecking, setIsRechecking] = useState<boolean>(false);
+
+  const checkHostAuth = async (silent = false) => {
+    try {
+      if (!silent) setIsRechecking(true);
+      const res = await fetch("/api/auth/me", {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (!data || !data.user) {
+          setAuthStatus("UNAUTHENTICATED");
+          return;
+        }
+
+        const role = (data.user.role || "").toUpperCase();
+        setUsername(data.user.username);
+
+        // Check if verified organizer through role, profile, or flag
+        const isApproved =
+          role === "ORGANIZER" ||
+          role === "ADMIN" ||
+          Boolean(data.user.isVerifiedOrganizer) ||
+          data.organizerProfile?.status === "APPROVED" ||
+          Boolean(data.organizerProfile?.verifiedByAdmin);
+
+        if (isApproved) {
+          setIsVerified(true);
+          setAuthStatus("AUTHORIZED");
+        } else {
+          // Contender without verified clearance
+          setAuthStatus("PLAYER_RESTRICTED");
+        }
+      } else {
+        setAuthStatus("UNAUTHENTICATED");
+      }
+    } catch {
+      setAuthStatus("UNAUTHENTICATED");
+    } finally {
+      if (!silent) setIsRechecking(false);
+    }
+  };
 
   useEffect(() => {
-    let isMounted = true;
+    checkHostAuth(true);
 
-    async function checkHostAuth() {
-      try {
-        const res = await fetch("/api/auth/me");
-        if (!isMounted) return;
-
-        if (res.ok) {
-          const data = await res.json();
-          if (!data.user) {
-            setAuthStatus("UNAUTHENTICATED");
-            return;
-          }
-
-          const role = (data.user.role || "").toUpperCase();
-          setUsername(data.user.username);
-
-          if (role === "ORGANIZER" || role === "ADMIN") {
-            setIsVerified(data.user.isVerifiedOrganizer ?? true);
-            setAuthStatus("AUTHORIZED");
-          } else {
-            // Logged in as regular player
-            setAuthStatus("PLAYER_RESTRICTED");
-          }
-        } else {
-          setAuthStatus("UNAUTHENTICATED");
-        }
-      } catch {
-        if (isMounted) setAuthStatus("UNAUTHENTICATED");
+    // Cross-tab and in-tab real-time listener for instant role/session sync
+    const unsubscribe = subscribeToSyncEvents((payload) => {
+      if (
+        payload.type === "AUTH_SESSION_CHANGED" ||
+        payload.type === "ORGANIZER_STATUS_CHANGED" ||
+        payload.type === "USER_ROLE_UPDATED"
+      ) {
+        checkHostAuth(true);
       }
-    }
+    });
 
-    checkHostAuth();
+    const handleFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        checkHostAuth(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
 
     return () => {
-      isMounted = false;
+      unsubscribe();
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, []);
+  }, [pathname]);
 
   const links = [
     { label: "Organizer Hub", shortLabel: "Host Hub", href: "/organizer/dashboard", icon: LayoutDashboard },
@@ -158,6 +197,15 @@ export default function OrganizerLayout({
           </div>
 
           <div className="pt-2 flex flex-col gap-2.5">
+            <Button
+              variant="outline"
+              onClick={() => checkHostAuth(false)}
+              disabled={isRechecking}
+              className="w-full text-xs font-bold border-violet-500/40 text-violet-300 hover:bg-violet-950/40 flex items-center justify-center gap-1.5"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isRechecking ? "animate-spin" : ""}`} />
+              {isRechecking ? "Checking Approval..." : "Re-check Approval Status"}
+            </Button>
             <Link href="/organizer/apply">
               <Button variant="primary" className="w-full text-xs font-bold">
                 Apply for Organizer Status <ArrowRight className="h-3.5 w-3.5 ml-1" />
