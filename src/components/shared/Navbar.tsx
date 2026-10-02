@@ -261,39 +261,34 @@ export function Navbar() {
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className={cn(
-                    "flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-xl bg-zinc-900/80 hover:bg-zinc-800/90 border border-white/[0.08] hover:border-white/20 transition-all duration-200 cursor-pointer select-none",
-                    isUserMenuOpen && "border-lime-500/40 bg-zinc-800"
+                    "flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/80 hover:bg-zinc-800/90 border border-white/[0.08] hover:border-white/20 transition-all duration-200 cursor-pointer select-none group",
+                    isUserMenuOpen && "border-lime-500/40 bg-zinc-800 ring-2 ring-lime-500/20"
                   )}
+                  title={`Account: ${user.username}`}
                   aria-label="User Account Menu"
                 >
                   <div className="relative">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-violet-600 to-lime-400 p-[1.5px] shadow-sm">
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-500 to-lime-400 p-[1.5px] shadow-sm group-hover:scale-105 transition-transform">
                       <div className="w-full h-full rounded-[6px] bg-zinc-950 flex items-center justify-center text-[11px] font-black text-white">
                         {user.username.slice(0, 2).toUpperCase()}
                       </div>
                     </div>
+                    {/* Small role indicator dot */}
+                    <span
+                      className={cn(
+                        "absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-black",
+                        role === "ADMIN"
+                          ? "bg-red-500"
+                          : role === "ORGANIZER"
+                          ? "bg-violet-400"
+                          : "bg-lime-400"
+                      )}
+                    />
                   </div>
-
-                  <span className="text-xs font-bold text-zinc-200 max-w-[100px] truncate">
-                    {user.username}
-                  </span>
-
-                  <span
-                    className={cn(
-                      "text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 rounded border",
-                      role === "ADMIN"
-                        ? "bg-red-950/60 text-red-400 border-red-500/30"
-                        : role === "ORGANIZER"
-                        ? "bg-violet-950/60 text-violet-300 border-violet-500/30"
-                        : "bg-lime-950/60 text-lime-400 border-lime-500/30"
-                    )}
-                  >
-                    {role === "ORGANIZER" ? "HOST" : role}
-                  </span>
 
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5 text-zinc-400 transition-transform duration-200",
+                      "h-3 w-3 text-zinc-400 pr-0.5 transition-transform duration-200",
                       isUserMenuOpen && "rotate-180 text-lime-400"
                     )}
                   />
