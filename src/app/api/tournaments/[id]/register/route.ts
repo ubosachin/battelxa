@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/db/connect";
 import {
   Tournament,
@@ -20,6 +21,9 @@ export async function POST(
     const session = await requireAuth();
 
     await connectToDatabase();
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid tournament ID" }, { status: 400 });
+    }
     const tournament = await Tournament.findById(id);
 
     if (!tournament) {
@@ -182,6 +186,7 @@ export async function POST(
   } catch (error: unknown) {
     console.error("Tournament registration error:", error);
     const message = error instanceof Error ? error.message : "Error registering for tournament";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/db/connect";
 import { Tournament, Registration, User, OrganizerProfile } from "@/lib/db/models";
 import { getSession } from "@/lib/auth/session";
@@ -9,6 +10,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid tournament ID" }, { status: 400 });
+    }
     await connectToDatabase();
 
     const tournament = await Tournament.findById(id)
@@ -93,6 +97,10 @@ export async function PATCH(
 
     if (!isAuthorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid tournament ID" }, { status: 400 });
     }
     const tournament = await Tournament.findById(id);
 

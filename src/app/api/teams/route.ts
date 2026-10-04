@@ -17,7 +17,8 @@ export async function GET() {
     return NextResponse.json({ teams });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error fetching teams";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -70,6 +71,7 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     console.error("Team creation error:", error);
     const message = error instanceof Error ? error.message : "Error creating team";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

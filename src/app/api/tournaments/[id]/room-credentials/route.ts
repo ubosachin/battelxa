@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/db/connect";
 import { Tournament, Registration } from "@/lib/db/models";
 import { requireAuth } from "@/lib/auth/session";
@@ -13,6 +14,10 @@ export async function GET(
     const session = await requireAuth();
 
     await connectToDatabase();
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid tournament ID" }, { status: 400 });
+    }
+
     const tournament = await Tournament.findById(id);
 
     if (!tournament) {
@@ -78,6 +83,7 @@ export async function GET(
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error retrieving room credentials";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

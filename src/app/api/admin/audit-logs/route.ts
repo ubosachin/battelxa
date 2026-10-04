@@ -16,6 +16,7 @@ export async function GET() {
     return NextResponse.json({ logs });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error fetching audit logs";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

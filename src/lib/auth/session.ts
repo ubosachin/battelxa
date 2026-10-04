@@ -39,3 +39,12 @@ export async function requireAuth(targetRole?: UserRole): Promise<SessionUser> {
   }
   return session;
 }
+
+export function getAuthErrorStatus(error: unknown): number | null {
+  if (error instanceof Error) {
+    if (error.message === "UNAUTHORIZED") return 401;
+    if (error.message === "FORBIDDEN") return 403;
+  }
+  return null;
+}
+

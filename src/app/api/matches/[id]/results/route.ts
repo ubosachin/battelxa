@@ -129,6 +129,7 @@ export async function POST(
   } catch (error: unknown) {
     console.error("Match result error:", error);
     const message = error instanceof Error ? error.message : "Error submitting match results";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

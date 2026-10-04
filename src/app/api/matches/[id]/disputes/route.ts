@@ -59,6 +59,7 @@ export async function POST(
   } catch (error: unknown) {
     console.error("Dispute submission error:", error);
     const message = error instanceof Error ? error.message : "Error submitting dispute";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

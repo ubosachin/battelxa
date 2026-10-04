@@ -36,6 +36,7 @@ export async function PATCH(
     return NextResponse.json({ message: "Dispute updated", dispute });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error resolving dispute";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
