@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   ArrowRight,
   TrendingUp,
+  Radio,
 } from "lucide-react";
 
 interface AdminStats {
@@ -191,6 +192,32 @@ export default function AdminDashboardPage() {
           <Link href="/admin/disputes" className="block">
             <Button variant="secondary" size="sm" className="w-full">
               Open Dispute Portal <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {/* Broadcast Dispatch Hub Card */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-violet-950/40 via-[#0e111a] to-lime-950/20 border border-violet-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Radio className="h-4 w-4 text-violet-400 animate-pulse" />
+            <span className="text-xs font-bold text-violet-400 uppercase tracking-widest">
+              Emergency & Match Alert Hub
+            </span>
+          </div>
+          <h3 className="text-lg font-bold text-white">
+            Broadcast to Discord Embed & Email
+          </h3>
+          <p className="text-xs text-zinc-400 max-w-2xl">
+            Dispatch urgent match updates, custom lobby Room ID & Password, schedule changes, or slot allocations directly to all registered participants with Discord rich embeds and dark gaming HTML emails.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link href="/admin/tournaments">
+            <Button variant="lime" size="sm">
+              <Radio className="h-3.5 w-3.5 mr-1 text-black" />
+              Manage & Broadcast Tournaments
             </Button>
           </Link>
         </div>

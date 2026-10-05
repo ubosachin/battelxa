@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/db/connect";
 import { Tournament, Registration, User, OrganizerProfile } from "@/lib/db/models";
 import { getSession } from "@/lib/auth/session";
+import { broadcastTournamentUpdate } from "@/lib/notifications/tournament-broadcast";
 
 export async function GET(
   req: NextRequest,
@@ -151,9 +152,40 @@ export async function PATCH(
     }
 
     await tournament.save();
-    return NextResponse.json({ message: "Tournament updated", tournament });
+
+    let broadcastResult = null;
+    if (
+      (body.notifyPlayers === true || body.roomCredentials?.notifyPlayers === true) &&
+      (tournament.roomCredentials?.roomId || tournament.roomCredentials?.password)
+    ) {
+      try {
+        broadcastResult = await broadcastTournamentUpdate({
+          tournamentId: tournament._id.toString(),
+          senderId: session.id,
+          senderRole: session.role === "ADMIN" ? "ADMIN" : "ORGANIZER",
+          title: "Match Room ID & Password Released! 🔑",
+          message: tournament.roomCredentials?.notes || "Your match room credentials have been issued. Join your designated slot immediately.",
+          type: "CREDENTIALS",
+          credentials: {
+            roomId: tournament.roomCredentials.roomId,
+            password: tournament.roomCredentials.password,
+            notes: tournament.roomCredentials.notes,
+          },
+          channels: ["EMAIL", "DISCORD", "IN_APP"],
+        });
+      } catch (broadcastErr) {
+        console.error("Auto-broadcast error on credentials save:", broadcastErr);
+      }
+    }
+
+    return NextResponse.json({
+      message: "Tournament updated",
+      tournament,
+      broadcast: broadcastResult,
+    });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Error updating tournament";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message === "UNAUTHORIZED" ? 401 : message === "FORBIDDEN" ? 403 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

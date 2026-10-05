@@ -80,6 +80,26 @@ export async function GET(req: NextRequest) {
       ? `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.png`
       : `https://cdn.discordapp.com/embed/avatars/${(parseInt(discriminator || "0", 10) % 5)}.png`;
 
+    // 2b. Automatically join user to BATTLEXA Discord Server if Guild ID and Bot Token are set
+    const guildId = process.env.DISCORD_GUILD_ID;
+    const botToken = process.env.DISCORD_BOT_TOKEN;
+    if (guildId && botToken && tokenData.access_token && discordId) {
+      try {
+        await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${discordId}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bot ${botToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            access_token: tokenData.access_token,
+          }),
+        });
+      } catch (guildJoinErr) {
+        console.warn("Discord auto guild-join notice:", guildJoinErr);
+      }
+    }
+
     await connectToDatabase();
 
     // 3. Find or Create User

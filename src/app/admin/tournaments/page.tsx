@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/utils";
-import { Ban } from "lucide-react";
+import { Ban, Send } from "lucide-react";
+import { MatchBroadcastModal } from "@/components/tournament/MatchBroadcastModal";
 
 interface AdminTournamentItem {
   _id: string;
@@ -22,6 +23,7 @@ export default function AdminTournamentsPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [refreshIndex, setRefreshIndex] = useState(0);
+  const [selectedTourneyForBroadcast, setSelectedTourneyForBroadcast] = useState<AdminTournamentItem | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -123,6 +125,14 @@ export default function AdminTournamentsPage() {
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-[0_0_10px_rgba(16,185,129,0.25)]"
+                          onClick={() => setSelectedTourneyForBroadcast(t)}
+                        >
+                          <Send className="h-3 w-3" /> Broadcast
+                        </Button>
                         <Link href={`/tournaments/${t._id}`} target="_blank">
                           <Button size="sm" variant="secondary">
                             View
@@ -145,6 +155,17 @@ export default function AdminTournamentsPage() {
             </table>
           </div>
         </div>
+      )}
+      {selectedTourneyForBroadcast && (
+        <MatchBroadcastModal
+          isOpen={!!selectedTourneyForBroadcast}
+          onClose={() => setSelectedTourneyForBroadcast(null)}
+          tournamentId={selectedTourneyForBroadcast._id}
+          tournamentTitle={selectedTourneyForBroadcast.title}
+          gameName={selectedTourneyForBroadcast.gameName}
+          registeredSlots={selectedTourneyForBroadcast.registeredSlots}
+          onBroadcastSuccess={() => setRefreshIndex((prev) => prev + 1)}
+        />
       )}
     </div>
   );

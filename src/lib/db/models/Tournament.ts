@@ -27,6 +27,16 @@ export interface IRoomCredentials {
   notes?: string;
 }
 
+export interface ITournamentAnnouncement {
+  title: string;
+  message: string;
+  type: "CREDENTIALS" | "UPDATE" | "ANNOUNCEMENT";
+  channels: string[];
+  sentAt: Date;
+  sentBy?: mongoose.Types.ObjectId | string;
+  recipientCount: number;
+}
+
 export interface ITournament extends Document {
   title: string;
   slug: string;
@@ -46,6 +56,8 @@ export interface ITournament extends Document {
   registrationDeadline: Date;
   checkInStartTime?: Date;
   roomCredentials?: IRoomCredentials;
+  discordWebhookUrl?: string;
+  announcements?: ITournamentAnnouncement[];
   rules: string;
   bannerUrl: string;
   streamUrl?: string;
@@ -177,6 +189,21 @@ const TournamentSchema = new Schema<ITournament>(
       type: Date,
     },
     roomCredentials: RoomCredentialsSchema,
+    discordWebhookUrl: {
+      type: String,
+      default: "",
+    },
+    announcements: [
+      {
+        title: { type: String, required: true },
+        message: { type: String, required: true },
+        type: { type: String, default: "UPDATE" },
+        channels: [{ type: String }],
+        sentAt: { type: Date, default: Date.now },
+        sentBy: { type: Schema.Types.ObjectId, ref: "User" },
+        recipientCount: { type: Number, default: 0 },
+      },
+    ],
     rules: {
       type: String,
       default: "Official rules apply.",

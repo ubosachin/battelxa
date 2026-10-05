@@ -18,7 +18,9 @@ import {
   Flame,
   ArrowRight,
   Gamepad2,
+  Radio,
 } from "lucide-react";
+import { MatchBroadcastModal } from "@/components/tournament/MatchBroadcastModal";
 
 interface RegistrationMember {
   userId?: string;
@@ -74,6 +76,8 @@ export default function OrganizerManageTournamentPage({
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   const [refreshIndex, setRefreshIndex] = useState(0);
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [notifyOnSave, setNotifyOnSave] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
@@ -120,11 +124,17 @@ export default function OrganizerManageTournamentPage({
             notes: notes.trim(),
             released: true,
           },
+          notifyPlayers: notifyOnSave,
         }),
       });
 
       if (res.ok) {
-        setCredsMessage({ type: "success", text: "Room credentials saved successfully!" });
+        setCredsMessage({
+          type: "success",
+          text: notifyOnSave
+            ? "Room credentials saved & broadcasted to Discord and Email!"
+            : "Room credentials saved successfully!",
+        });
         setRefreshIndex((prev) => prev + 1);
       } else {
         const err = await res.json();
@@ -206,6 +216,14 @@ export default function OrganizerManageTournamentPage({
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsBroadcastModalOpen(true)}
+            className="border-violet-500/40 hover:border-violet-450 text-violet-300 hover:text-white"
+          >
+            <Radio className="h-4 w-4 mr-1 text-violet-400 animate-pulse" /> Broadcast Match Alert
+          </Button>
           <Link href={`/organizer/tournaments/${id}/matches`}>
             <Button variant="lime" size="sm">
               <Flame className="h-4 w-4 mr-1 text-black" /> Enter Match Results & Evidence
@@ -264,6 +282,20 @@ export default function OrganizerManageTournamentPage({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
+
+            <label className="flex items-start sm:items-center gap-3 cursor-pointer text-xs text-zinc-300 bg-black/40 border border-white/5 rounded-xl p-3 hover:border-violet-500/30 transition-colors">
+              <input
+                type="checkbox"
+                checked={notifyOnSave}
+                onChange={(e) => setNotifyOnSave(e.target.checked)}
+                className="mt-0.5 sm:mt-0 h-4 w-4 rounded accent-lime-400 cursor-pointer"
+              />
+              <span>
+                Broadcast Room ID & Password to all registered players via{" "}
+                <strong className="text-violet-400">Discord Embed</strong> &{" "}
+                <strong className="text-lime-400">Email</strong> immediately upon saving
+              </span>
+            </label>
 
             <div className="flex items-center justify-between pt-2">
               <span className="text-[11px] text-zinc-400">
@@ -412,6 +444,21 @@ export default function OrganizerManageTournamentPage({
           </div>
         </div>
       </div>
+
+      {tournament && (
+        <MatchBroadcastModal
+          isOpen={isBroadcastModalOpen}
+          onClose={() => setIsBroadcastModalOpen(false)}
+          tournamentId={tournament._id}
+          tournamentTitle={tournament.title}
+          gameName={tournament.gameName}
+          initialRoomId={roomId}
+          initialPassword={password}
+          initialNotes={notes}
+          registeredSlots={registrations.length || tournament.registeredSlots}
+          onBroadcastSuccess={() => setRefreshIndex((prev) => prev + 1)}
+        />
+      )}
     </div>
   );
 }

@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   discordAuthUrl.searchParams.set("client_id", clientId);
   discordAuthUrl.searchParams.set("redirect_uri", redirectUri);
   discordAuthUrl.searchParams.set("response_type", "code");
-  discordAuthUrl.searchParams.set("scope", "identify email");
+  discordAuthUrl.searchParams.set("scope", "identify email guilds.join");
   discordAuthUrl.searchParams.set("prompt", "consent");
   if (returnParam) {
     discordAuthUrl.searchParams.set("state", returnParam);
