@@ -22,13 +22,13 @@ export function Badge({
 }: BadgeProps) {
   const variantStyles = {
     violet:
-      "bg-violet-950/60 text-violet-300 border-violet-700/40 shadow-sm shadow-violet-900/20",
-    lime: "bg-lime-950/60 text-lime-400 border-lime-600/40 shadow-sm shadow-lime-900/20",
-    amber: "bg-amber-950/60 text-amber-300 border-amber-600/40",
-    emerald: "bg-emerald-950/60 text-emerald-300 border-emerald-600/40",
-    red: "bg-red-950/60 text-red-300 border-red-600/40",
-    zinc: "bg-zinc-800/80 text-zinc-300 border-zinc-700/50",
-    outline: "bg-transparent text-zinc-400 border-zinc-700",
+      "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-700/40 shadow-sm",
+    lime: "bg-lime-100 text-lime-900 border-lime-300 dark:bg-lime-950/60 dark:text-lime-400 dark:border-lime-600/40 shadow-sm",
+    amber: "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-600/40 shadow-sm",
+    emerald: "bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-600/40 shadow-sm",
+    red: "bg-red-100 text-red-900 border-red-300 dark:bg-red-950/60 dark:text-red-300 dark:border-red-600/40 shadow-sm",
+    zinc: "bg-slate-100 text-slate-700 border-slate-300 dark:bg-zinc-800/80 dark:text-zinc-300 dark:border-zinc-700/50",
+    outline: "bg-transparent text-slate-600 border-slate-300 dark:text-zinc-400 dark:border-zinc-700",
   };
 
   return (

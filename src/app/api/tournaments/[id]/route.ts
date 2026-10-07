@@ -17,12 +17,19 @@ export async function GET(
     await connectToDatabase();
 
     const tournament = await Tournament.findById(id)
-      .populate("organizerId", "username")
+      .populate("organizerId", "username avatar")
       .lean();
 
     if (!tournament) {
       return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
     }
+
+    // Look up organizer's profile for custom organization branding
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const orgUserId = (tournament.organizerId as any)?._id || tournament.organizerId;
+    const orgProfile = await OrganizerProfile.findOne({ userId: orgUserId })
+      .select("organizationName logo website rating")
+      .lean();
 
     // Check if current user is registered
     const session = await getSession();
@@ -58,6 +65,9 @@ export async function GET(
 
     const sanitizedTournament = {
       ...tournament,
+      organizerName: orgProfile?.organizationName || (tournament.organizerId as any)?.username || "BATTLEXA Host",
+      organizerLogo: orgProfile?.logo || (tournament.organizerId as any)?.avatar || "",
+      organizerWebsite: orgProfile?.website || "",
       roomCredentials: {
         releaseTime: tournament.roomCredentials?.releaseTime,
         released: tournament.roomCredentials?.released,

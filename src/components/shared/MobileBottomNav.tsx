@@ -100,43 +100,60 @@ export function MobileBottomNav() {
   const triggerHaptic = () => {
     if (typeof window !== "undefined" && "vibrate" in navigator) {
       try {
-        navigator.vibrate(10);
-      } catch {
-        // Ignore if restricted
-      }
+        navigator.vibrate(12);
+      } catch {}
     }
   };
 
-  // Build navigation items based on active role
   const getNavItems = (): NavItem[] => {
-    const role = user?.role ? user.role.toUpperCase() : null;
+    if (!user) {
+      return [
+        { id: "home", label: "Arena", href: "/", icon: Flame },
+        { id: "tournaments", label: "Cups", href: "/tournaments", icon: Trophy },
+        { id: "games", label: "Games", href: "/games", icon: Gamepad2, isHighlight: true },
+        { id: "leaderboard", label: "Ranks", href: "/leaderboard", icon: Users },
+        { id: "login", label: "Sign In", href: "/login", icon: User },
+      ];
+    }
 
-    if (role === "ADMIN") {
+    if (user.role === "ADMIN") {
       return [
         { id: "admin-home", label: "Home", href: "/", icon: Flame },
-        { id: "admin-users", label: "Users", href: "/admin/users", icon: Users },
-        { id: "admin-dash", label: "Admin", href: "/admin/dashboard", icon: ShieldAlert },
+        { id: "admin-overview", label: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+        {
+          id: "admin-tournaments",
+          label: "Manage",
+          href: "/admin/tournaments",
+          icon: Trophy,
+          isHighlight: true,
+        },
+        { id: "admin-payouts", label: "Payouts", href: "/admin/payouts", icon: CreditCard },
         { id: "admin-disputes", label: "Disputes", href: "/admin/disputes", icon: Scale },
-        { id: "admin-logs", label: "Logs", href: "/admin/audit-logs", icon: FileText },
       ];
     }
 
-    if (role === "ORGANIZER") {
+    if (user.role === "ORGANIZER") {
       return [
         { id: "org-home", label: "Home", href: "/", icon: Flame },
-        { id: "org-matches", label: "Matches", href: "/tournaments", icon: Trophy },
-        { id: "org-dash", label: "Dashboard", href: "/organizer/dashboard", icon: LayoutDashboard },
-        { id: "org-host", label: "Host", href: "/organizer/tournaments/create", icon: PlusCircle, isHighlight: true },
-        { id: "org-payouts", label: "Payouts", href: "/organizer/payouts", icon: CreditCard },
+        { id: "org-hub", label: "Hub", href: "/organizer/dashboard", icon: LayoutDashboard },
+        {
+          id: "org-create",
+          label: "Host Cup",
+          href: "/organizer/tournaments/create",
+          icon: PlusCircle,
+          isHighlight: true,
+        },
+        { id: "org-payouts", label: "Earnings", href: "/organizer/payouts", icon: Wallet },
+        { id: "org-profile", label: "Profile", href: "/organizer/apply", icon: User },
       ];
     }
 
-    // Default: PLAYER or GUEST
+    // Default: PLAYER role
     return [
-      { id: "user-home", label: "Home", href: "/", icon: Flame },
-      { id: "user-explore", label: "Explore", href: "/tournaments", icon: Trophy },
+      { id: "player-home", label: "Home", href: "/", icon: Flame },
+      { id: "player-tournaments", label: "Cups", href: "/tournaments", icon: Trophy },
       {
-        id: "user-matches",
+        id: "player-matches",
         label: "My Games",
         href: user ? "/player/tournaments" : "/login",
         icon: Gamepad2,
@@ -228,7 +245,7 @@ export function MobileBottomNav() {
                   }`}
                 />
                 {item.badge && (
-                  <span className="absolute -top-1.5 -right-3 text-[9px] font-extrabold px-1 py-0.2 bg-violet-600/90 text-white rounded-full border border-violet-400/30">
+                  <span className="absolute -top-1.5 -right-3 text-[9px] font-extrabold px-1 py-0.2 bg-violet-600 text-white rounded-full border border-violet-400/30">
                     {item.badge}
                   </span>
                 )}

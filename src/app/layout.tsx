@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#08090E",
+  themeColor: "#08090e",
 };
 
 export const metadata: Metadata = {
@@ -39,15 +39,14 @@ export const metadata: Metadata = {
   ],
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
-      { url: "/logo-icon.png", sizes: "512x512", type: "image/png" },
+      { url: "/brand/battlexa-emblem.png?v=3", sizes: "any", type: "image/png" },
+      { url: "/favicon-32x32.png?v=3", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-96x96.png?v=3", sizes: "96x96", type: "image/png" },
+      { url: "/favicon.ico?v=3", sizes: "any" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/brand/battlexa-emblem.png?v=3",
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-touch-icon.png?v=3", sizes: "180x180", type: "image/png" },
     ],
   },
   manifest: "/site.webmanifest",
@@ -68,8 +67,24 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  localStorage.removeItem('battlexa_theme');
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.classList.remove('light');
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-[#08090e] text-zinc-100 selection:bg-violet-600 selection:text-white">
         <Navbar />
         <main className="flex-1 flex flex-col mobile-bottom-offset md:pb-0">
@@ -81,4 +96,3 @@ export default function RootLayout({
     </html>
   );
 }
-

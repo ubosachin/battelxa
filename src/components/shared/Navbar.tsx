@@ -37,6 +37,7 @@ interface UserSession {
   email: string;
   username: string;
   role: "PLAYER" | "ORGANIZER" | "ADMIN";
+  avatar?: string;
 }
 
 export function Navbar() {
@@ -101,16 +102,19 @@ export function Navbar() {
     return () => {
       isMounted = false;
       unsubscribe();
-      clearInterval(interval);
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
+      clearInterval(interval);
     };
-  }, [pathname]);
+  }, []);
 
-  // Click outside listener for User Menu Dropdown
+  // Close dropdown on outside click
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     }
@@ -172,7 +176,7 @@ export function Navbar() {
                 className={cn(
                   "relative flex items-center gap-2 px-3 py-2 rounded-xl text-xs xl:text-sm font-bold transition-all duration-200 group select-none",
                   isActive
-                    ? "text-lime-400 bg-lime-400/[0.08] border border-lime-400/25 shadow-sm shadow-lime-950/20"
+                    ? "text-lime-400 bg-lime-400/[0.08] border border-lime-400/25 shadow-sm"
                     : "text-zinc-400 hover:text-white hover:bg-white/[0.05]"
                 )}
               >
@@ -195,12 +199,12 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-2.5">
           {user ? (
             <>
-              {/* Wallet Chip if player */}
+              {/* Player Quick Wallet Badge */}
               {role === "PLAYER" && (
                 <Link
                   href="/player/wallet"
                   title="View Wallet Ledger & Balance"
-                  className="group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-lime-950/40 via-zinc-900 to-zinc-900 hover:from-lime-950/60 border border-lime-500/30 hover:border-lime-400/60 transition-all shadow-sm shadow-lime-950/30 active:scale-95"
+                  className="group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-lime-950/40 via-zinc-900 to-zinc-900 hover:from-lime-950/60 border border-lime-500/30 hover:border-lime-400/60 transition-all shadow-sm active:scale-95"
                 >
                   <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-lime-500/20 text-lime-400 group-hover:scale-105 transition-transform">
                     <Wallet className="h-3.5 w-3.5 text-lime-400" />
@@ -222,7 +226,7 @@ export function Navbar() {
                   <Button
                     variant="primary"
                     size="sm"
-                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold shadow-md shadow-violet-950/40 border-none rounded-xl"
+                    className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold shadow-md border-none rounded-xl"
                   >
                     <PlusCircle className="h-3.5 w-3.5 mr-1.5" /> Host Cup
                   </Button>
@@ -234,7 +238,7 @@ export function Navbar() {
                   <Button
                     variant="danger"
                     size="sm"
-                    className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-extrabold shadow-md shadow-red-950/40 border-none rounded-xl"
+                    className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white font-extrabold shadow-md border-none rounded-xl"
                   >
                     <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> Admin Panel
                   </Button>
@@ -246,7 +250,7 @@ export function Navbar() {
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="bg-zinc-900/80 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-white/10 font-bold rounded-xl"
+                    className="rounded-xl"
                   >
                     <Gamepad2 className="h-3.5 w-3.5 mr-1.5 text-lime-400" /> My Matches
                   </Button>
@@ -261,17 +265,25 @@ export function Navbar() {
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className={cn(
-                    "flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/80 hover:bg-zinc-800/90 border border-white/[0.08] hover:border-white/20 transition-all duration-200 cursor-pointer select-none group",
-                    isUserMenuOpen && "border-lime-500/40 bg-zinc-800 ring-2 ring-lime-500/20"
+                    "flex items-center gap-1.5 p-1 rounded-xl bg-zinc-900/80 hover:bg-zinc-800/90 border border-white/[0.08] transition-all duration-200 cursor-pointer select-none group",
+                    isUserMenuOpen && "border-lime-500 ring-2 ring-lime-500/20 bg-zinc-800"
                   )}
                   title={`Account: ${user.username}`}
                   aria-label="User Account Menu"
                 >
                   <div className="relative">
-                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-500 to-lime-400 p-[1.5px] shadow-sm group-hover:scale-105 transition-transform">
-                      <div className="w-full h-full rounded-[6px] bg-zinc-950 flex items-center justify-center text-[11px] font-black text-white">
-                        {user.username.slice(0, 2).toUpperCase()}
-                      </div>
+                    <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-violet-600 via-indigo-500 to-lime-400 p-[1.5px] shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.username}
+                          className="w-full h-full rounded-[6px] object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-[6px] bg-zinc-950 flex items-center justify-center text-[11px] font-black text-white">
+                          {user.username.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                     {/* Small role indicator dot */}
                     <span
@@ -300,10 +312,18 @@ export function Navbar() {
                     {/* Header info */}
                     <div className="p-2 space-y-2">
                       <div className="flex items-center gap-2.5">
-                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-violet-600 to-lime-400 p-[1.5px] shrink-0">
-                          <div className="w-full h-full rounded-[10px] bg-zinc-950 flex items-center justify-center text-xs font-black text-white">
-                            {user.username.slice(0, 2).toUpperCase()}
-                          </div>
+                        <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-violet-600 to-lime-400 p-[1.5px] shrink-0 overflow-hidden">
+                          {user.avatar ? (
+                            <img
+                              src={user.avatar}
+                              alt={user.username}
+                              className="w-full h-full rounded-[10px] object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full rounded-[10px] bg-zinc-950 flex items-center justify-center text-xs font-black text-white">
+                              {user.username.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="text-xs font-bold text-white truncate flex items-center gap-1">
@@ -462,9 +482,9 @@ export function Navbar() {
                     <div className="pt-1.5">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-950/30 transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-bold text-red-400 hover:bg-red-950/30 transition-colors cursor-pointer"
                       >
-                        <LogOut className="h-4 w-4 text-red-400" />
+                        <LogOut className="h-4 w-4 text-red-500" />
                         <span>Sign Out</span>
                       </button>
                     </div>
@@ -478,7 +498,7 @@ export function Navbar() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-zinc-300 hover:text-white font-bold rounded-xl"
+                  className="rounded-xl font-bold"
                 >
                   Sign In
                 </Button>
@@ -487,7 +507,7 @@ export function Navbar() {
                 <Button
                   variant="lime"
                   size="sm"
-                  className="font-extrabold shadow-md shadow-lime-950/40 rounded-xl"
+                  className="font-extrabold shadow-md rounded-xl"
                 >
                   Play Now
                 </Button>
@@ -497,7 +517,7 @@ export function Navbar() {
         </div>
 
         {/* Mobile App Bar Actions */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex md:hidden items-center gap-1.5">
           {user && role === "PLAYER" && (
             <Link
               href="/player/wallet"
@@ -519,11 +539,19 @@ export function Navbar() {
                   ? "/organizer/dashboard"
                   : "/player/profile"
               }
-              className="h-8 w-8 rounded-lg bg-gradient-to-tr from-violet-600 to-lime-400 p-[1.5px] active:scale-95 transition-transform shrink-0"
+              className="h-8 w-8 rounded-lg bg-gradient-to-tr from-violet-600 to-lime-400 p-[1.5px] active:scale-95 transition-transform shrink-0 overflow-hidden"
             >
-              <div className="w-full h-full rounded-[6px] bg-zinc-950 flex items-center justify-center text-xs font-black text-white">
-                {user.username.slice(0, 2).toUpperCase()}
-              </div>
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.username}
+                  className="w-full h-full rounded-[6px] object-cover"
+                />
+              ) : (
+                <div className="w-full h-full rounded-[6px] bg-zinc-950 flex items-center justify-center text-xs font-black text-white">
+                  {user.username.slice(0, 2).toUpperCase()}
+                </div>
+              )}
             </Link>
           )}
 
@@ -544,10 +572,18 @@ export function Navbar() {
           {user ? (
             <div className="p-3.5 rounded-2xl bg-zinc-900/90 border border-white/[0.08] flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-violet-600 to-lime-400 p-[1.5px] shrink-0">
-                  <div className="w-full h-full rounded-[10px] bg-zinc-950 flex items-center justify-center text-xs font-black text-white">
-                    {user.username.slice(0, 2).toUpperCase()}
-                  </div>
+                <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-violet-600 to-lime-400 p-[1.5px] shrink-0 overflow-hidden">
+                  {user.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.username}
+                      className="w-full h-full rounded-[10px] object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-[10px] bg-zinc-950 flex items-center justify-center text-xs font-black text-white">
+                      {user.username.slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <div className="text-xs font-bold text-white leading-tight">
@@ -622,10 +658,10 @@ export function Navbar() {
                         "flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all",
                         isActive
                           ? "bg-red-600 text-white shadow-md shadow-red-950/40"
-                          : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800"
+                          : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-transparent"
                       )}
                     >
-                      <Icon className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                      <Icon className="h-3.5 w-3.5 text-red-500 shrink-0" />
                       <span className="truncate">{item.label}</span>
                     </Link>
                   );
@@ -659,7 +695,7 @@ export function Navbar() {
                         "flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all",
                         isActive
                           ? "bg-violet-600 text-white shadow-md shadow-violet-950/40"
-                          : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800"
+                          : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-transparent"
                       )}
                     >
                       <Icon className="h-3.5 w-3.5 text-violet-400 shrink-0" />
@@ -697,7 +733,7 @@ export function Navbar() {
                         "flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all",
                         isActive
                           ? "bg-lime-500 text-black shadow-md shadow-lime-950/40"
-                          : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800"
+                          : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-transparent"
                       )}
                     >
                       <Icon className="h-3.5 w-3.5 text-lime-400 shrink-0" />
@@ -727,7 +763,7 @@ export function Navbar() {
                       "flex items-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all",
                       isActive
                         ? "text-lime-400 bg-lime-950/40 border border-lime-500/30"
-                        : "text-zinc-300 hover:bg-zinc-800/80 bg-zinc-900/40"
+                        : "text-zinc-300 hover:bg-zinc-800/80 bg-zinc-900/40 border border-transparent"
                     )}
                   >
                     <Icon className="h-3.5 w-3.5 text-lime-400" />

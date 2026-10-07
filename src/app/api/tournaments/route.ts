@@ -58,22 +58,36 @@ export async function GET(req: NextRequest) {
 
     const total = await Tournament.countDocuments(query);
     const tournaments = await Tournament.find(query)
-      .populate("organizerId", "username")
+      .populate("organizerId", "username avatar")
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();
 
-    const formatted = tournaments.map((t) => ({
-      ...t,
+    // Map organizer profiles to include their custom organization name and logo
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const organizerUserIds = tournaments.map((t) => (t.organizerId as any)?._id || t.organizerId).filter(Boolean);
+    const orgProfiles = await OrganizerProfile.find({ userId: { $in: organizerUserIds } })
+      .select("userId organizationName logo")
+      .lean();
+    const orgProfileMap = new Map(orgProfiles.map((p) => [p.userId.toString(), p]));
+
+    const formatted = tournaments.map((t) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      organizerName: (t.organizerId as any)?.username || "BATTLEXA Host",
-      roomCredentials: {
-        releaseTime: t.roomCredentials?.releaseTime,
-        released: t.roomCredentials?.released,
-        // Notice: do NOT expose raw roomId or password in public tournament lists!
-      },
-    }));
+      const orgUserId = (t.organizerId as any)?._id?.toString() || t.organizerId?.toString() || "";
+      const orgProf = orgProfileMap.get(orgUserId);
+
+      return {
+        ...t,
+        organizerName: orgProf?.organizationName || (t.organizerId as any)?.username || "BATTLEXA Host",
+        organizerLogo: orgProf?.logo || (t.organizerId as any)?.avatar || "",
+        roomCredentials: {
+          releaseTime: t.roomCredentials?.releaseTime,
+          released: t.roomCredentials?.released,
+          // Notice: do NOT expose raw roomId or password in public tournament lists!
+        },
+      };
+    });
 
     return NextResponse.json({
       tournaments: formatted,

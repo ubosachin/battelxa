@@ -45,6 +45,8 @@ export async function GET() {
           activeGladiators,
           rating,
           organizationName: orgProfile?.organizationName || session.username,
+          logo: orgProfile?.logo || "",
+          banner: orgProfile?.banner || "",
           verified: Boolean(orgProfile?.verifiedByAdmin && orgProfile?.status === "APPROVED"),
         },
         tournaments,

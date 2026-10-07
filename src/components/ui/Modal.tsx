@@ -48,32 +48,32 @@ export function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Dialog */}
       <div
         className={cn(
-          "relative w-full rounded-2xl bg-[#0e111a] border border-zinc-800 shadow-2xl p-5 sm:p-6 text-zinc-100 z-10 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 my-auto",
+          "relative w-full rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-zinc-800 shadow-2xl p-5 sm:p-6 text-slate-900 dark:text-zinc-100 z-10 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200 my-auto",
           maxWidthStyles[maxWidth]
         )}
       >
         {/* Glow accent */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 via-indigo-500 to-lime-500 rounded-t-2xl" />
 
-        <div className="flex items-start justify-between pb-3 sm:pb-4 shrink-0 border-b border-zinc-800/80">
+        <div className="flex items-start justify-between pb-3 sm:pb-4 shrink-0 border-b border-slate-200 dark:border-zinc-800/80">
           <div className="pr-4">
-            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white">
+            <h2 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white">
               {title}
             </h2>
             {description && (
-              <p className="text-xs text-zinc-400 mt-1">{description}</p>
+              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors shrink-0"
+            className="rounded-lg p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/80 transition-colors shrink-0 cursor-pointer"
             aria-label="Close dialog"
           >
             <X className="h-5 w-5" />

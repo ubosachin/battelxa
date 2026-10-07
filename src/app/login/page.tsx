@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Input } from "@/components/ui/Input";
 import { Swords, ShieldCheck, Zap, Trophy, Lock, Loader2, ArrowRight, Mail, User, ChevronDown } from "lucide-react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 function GoogleIcon() {
   return (
@@ -219,25 +220,7 @@ function LoginFormContent() {
 
           {/* Brand Header Inside Container */}
           <div className="flex flex-col items-center text-center space-y-2.5 pt-1">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2.5 sm:gap-3 group focus:outline-none"
-            >
-              <div className="relative flex items-center justify-center p-0.5 rounded-2xl bg-gradient-to-br from-violet-600 via-indigo-700 to-zinc-950 border border-lime-400/40 shadow-xl shadow-lime-950/60 group-hover:scale-105 group-hover:border-lime-400 transition-all duration-300 shrink-0 overflow-hidden">
-                <Image
-                  src="/logo-icon.png"
-                  alt="BATTLEXA"
-                  width={52}
-                  height={52}
-                  className="rounded-2xl object-cover"
-                  priority
-                />
-              </div>
-              <div className="text-2xl xs:text-3xl sm:text-4xl font-black tracking-tight flex items-center leading-none select-none">
-                <span className="text-white">BATTLE</span>
-                <span className="text-lime-400">XA</span>
-              </div>
-            </Link>
+            <BrandLogo size="lg" />
 
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-950/70 border border-violet-500/30 text-[10px] font-black uppercase tracking-wider text-violet-300">

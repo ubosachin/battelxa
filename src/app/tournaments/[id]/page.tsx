@@ -58,6 +58,8 @@ interface TournamentDetail {
     username?: string;
     organizationName?: string;
   };
+  organizerName?: string;
+  organizerLogo?: string;
   roomCredentials?: {
     roomId?: string;
     password?: string;
@@ -243,10 +245,19 @@ export default function TournamentDetailPage({
             {tournament.title}
           </h1>
           <p className="text-xs sm:text-sm text-zinc-400 flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-lime-400" />
+            {tournament.organizerLogo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={tournament.organizerLogo}
+                alt={tournament.organizerName || "Host"}
+                className="h-5 w-5 rounded-full object-cover border border-lime-400/40"
+              />
+            ) : (
+              <ShieldCheck className="h-4 w-4 text-lime-400 shrink-0" />
+            )}
             Hosted by{" "}
             <span className="text-zinc-200 font-semibold">
-              {tournament.organizerId?.username || "Verified Host"}
+              {tournament.organizerName || tournament.organizerId?.organizationName || tournament.organizerId?.username || "Verified Host"}
             </span>{" "}
             • Region: {tournament.region}
           </p>

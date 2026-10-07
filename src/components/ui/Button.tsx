@@ -26,16 +26,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-900/30 hover:from-violet-500 hover:to-indigo-500 border border-violet-400/20",
-      lime: "bg-lime-500 text-black font-bold shadow-lg shadow-lime-900/30 hover:bg-lime-400 hover:shadow-lime-500/20 border border-lime-300/30",
+        "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-900/20 hover:from-violet-500 hover:to-indigo-500 border border-violet-400/20",
+      lime: "bg-lime-500 text-black font-bold shadow-md shadow-lime-900/20 hover:bg-lime-400 hover:shadow-lime-500/20 border border-lime-300/30",
       secondary:
-        "bg-zinc-800/90 text-zinc-100 hover:bg-zinc-700/90 border border-zinc-700/60",
+        "bg-slate-100 dark:bg-zinc-800/90 text-slate-800 dark:text-zinc-100 hover:bg-slate-200 dark:hover:bg-zinc-700/90 border border-slate-300 dark:border-zinc-700/60 shadow-sm dark:shadow-none",
       outline:
-        "bg-transparent text-zinc-200 border border-zinc-700 hover:border-violet-500 hover:text-white hover:bg-violet-950/20",
+        "bg-white dark:bg-transparent text-slate-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:border-violet-500 hover:text-violet-600 dark:hover:text-white hover:bg-violet-50 dark:hover:bg-violet-950/20 shadow-sm dark:shadow-none",
       danger:
-        "bg-red-600 text-white hover:bg-red-500 shadow-lg shadow-red-900/30 border border-red-400/20",
+        "bg-red-600 text-white hover:bg-red-500 shadow-md shadow-red-900/20 border border-red-400/20",
       ghost:
-        "bg-transparent text-zinc-400 hover:text-white hover:bg-white/5",
+        "bg-transparent text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5",
     };
 
     const sizeStyles = {
@@ -79,5 +79,3 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 
 Button.displayName = "Button";
-
-export default Button;

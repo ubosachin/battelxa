@@ -30,6 +30,8 @@ export async function POST(req: NextRequest) {
     const phone = (body.phone || "").trim();
     const website = (body.website || "").trim();
     const upiId = (body.upiId || "").trim();
+    const logo = (body.logo || "").trim();
+    const banner = (body.banner || "").trim();
 
     if (!organizationName) {
       return NextResponse.json(
@@ -76,6 +78,8 @@ export async function POST(req: NextRequest) {
         phone,
         website,
         upiId,
+        ...(logo ? { logo } : {}),
+        ...(banner ? { banner } : {}),
         status: "PENDING",
         verifiedByAdmin: false,
         rejectionReason: "", // Clear any previous rejection reason

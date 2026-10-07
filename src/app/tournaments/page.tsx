@@ -86,14 +86,14 @@ export default function TournamentsDiscoveryPage() {
     <div className="min-h-screen py-6 sm:py-10 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:pb-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
       {/* Header */}
       <div className="space-y-2">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-lime-400">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-lime-600 dark:text-lime-400">
           <Trophy className="h-4 w-4" />
           Arena Competitions
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
           Tournament Discovery Hub
         </h1>
-        <p className="text-xs sm:text-sm text-zinc-400 max-w-2xl">
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 max-w-2xl">
           Filter through live, upcoming, and practice battlegrounds for Free Fire MAX and BGMI. Find your format, register your squad, and claim prize payouts.
         </p>
       </div>
@@ -106,13 +106,13 @@ export default function TournamentsDiscoveryPage() {
       />
 
       {/* Results Header */}
-      <div className="flex items-center justify-between text-xs text-zinc-400">
+      <div className="flex items-center justify-between text-xs text-slate-600 dark:text-zinc-400">
         <span>
-          Showing <strong className="text-white">{tournaments.length}</strong> available tournament arenas
+          Showing <strong className="text-slate-900 dark:text-white">{tournaments.length}</strong> available tournament arenas
         </span>
         <button
           onClick={() => fetchTournaments(filters)}
-          className="flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
         >
           <RefreshCw className="h-3.5 w-3.5" /> Refresh list
         </button>
@@ -122,7 +122,7 @@ export default function TournamentsDiscoveryPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-72 rounded-xl bg-zinc-900/60 p-4 space-y-3">
+            <div key={i} className="h-72 rounded-xl bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 p-4 space-y-3 shadow-sm">
               <Skeleton className="h-28 w-full rounded-lg" />
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-10 w-full" />
@@ -131,17 +131,17 @@ export default function TournamentsDiscoveryPage() {
           ))}
         </div>
       ) : tournaments.length === 0 ? (
-        <div className="rounded-2xl bg-[#0e111a] border border-zinc-800 p-12 text-center space-y-4">
-          <div className="inline-flex p-4 rounded-full bg-zinc-800/80 text-zinc-400">
+        <div className="rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-zinc-800 p-12 text-center space-y-4 shadow-sm">
+          <div className="inline-flex p-4 rounded-full bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-400">
             <Trophy className="h-8 w-8" />
           </div>
-          <h3 className="text-lg font-bold text-white">No Tournaments Match Your Filter</h3>
-          <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Tournaments Match Your Filter</h3>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
             Try adjusting your search criteria, format selection, or reset filters to see all available battles.
           </p>
           <button
             onClick={handleReset}
-            className="px-4 py-2 rounded-lg bg-violet-600 text-white font-bold text-xs hover:bg-violet-500 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-violet-600 text-white font-bold text-xs hover:bg-violet-500 transition-colors cursor-pointer shadow-md"
           >
             Reset All Filters
           </button>

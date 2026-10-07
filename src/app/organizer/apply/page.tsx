@@ -20,6 +20,8 @@ import {
   Wallet,
   Edit3,
   Radio,
+  Upload,
+  X,
 } from "lucide-react";
 import { emitSyncEvent, subscribeToSyncEvents } from "@/lib/sync/sync-events";
 
@@ -27,6 +29,8 @@ interface ExistingProfile {
   _id: string;
   organizationName: string;
   description: string;
+  logo?: string;
+  banner?: string;
   phone?: string;
   website?: string;
   upiId?: string;
@@ -40,6 +44,7 @@ interface ExistingProfile {
 export default function OrganizerApplyPage() {
   const [organizationName, setOrganizationName] = useState("");
   const [description, setDescription] = useState("");
+  const [logo, setLogo] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
   const [upiId, setUpiId] = useState("");
@@ -47,9 +52,11 @@ export default function OrganizerApplyPage() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [existingProfile, setExistingProfile] = useState<ExistingProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
 
   const loadStatus = async (silent = false) => {
     try {
@@ -62,6 +69,7 @@ export default function OrganizerApplyPage() {
           setExistingProfile(data.profile);
           setOrganizationName(data.profile.organizationName || "");
           setDescription(data.profile.description || "");
+          setLogo(data.profile.logo || "");
           setPhone(data.profile.phone || "");
           setWebsite(data.profile.website || "");
           setUpiId(data.profile.upiId || "");
@@ -117,6 +125,50 @@ export default function OrganizerApplyPage() {
     };
   }, [existingProfile?.status]);
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setMessage({ type: "error", text: "Please select an image file (PNG, JPG, or WebP)." });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ type: "error", text: "Logo image size must be under 5MB." });
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    setMessage(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/media/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLogo(data.url);
+        setMessage({
+          type: "success",
+          text: "Organization logo uploaded successfully! Click Submit to save your application.",
+        });
+      } else {
+        const err = await res.json();
+        setMessage({ type: "error", text: err.error || "Failed to upload logo image" });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Network error uploading logo image." });
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreeTerms && !existingProfile) {
@@ -137,6 +189,7 @@ export default function OrganizerApplyPage() {
         body: JSON.stringify({
           organizationName,
           description,
+          logo,
           phone,
           website,
           upiId,
@@ -210,8 +263,16 @@ export default function OrganizerApplyPage() {
       {isApproved && !isEditing && (
         <div className="rounded-2xl bg-gradient-to-br from-emerald-950/60 via-[#0e111a] to-zinc-950 border border-lime-500/50 p-6 sm:p-8 space-y-6 shadow-2xl">
           <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-lime-500/20 border border-lime-500/40 text-lime-400 flex items-center justify-center shrink-0">
-              <CheckCircle2 className="h-8 w-8" />
+            <div className="h-16 w-16 rounded-2xl bg-lime-500/20 border border-lime-500/40 text-lime-400 flex items-center justify-center shrink-0 overflow-hidden">
+              {existingProfile.logo ? (
+                <img
+                  src={existingProfile.logo}
+                  alt={existingProfile.organizationName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <CheckCircle2 className="h-8 w-8" />
+              )}
             </div>
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded bg-lime-500/20 text-lime-400 border border-lime-500/30">
@@ -274,8 +335,16 @@ export default function OrganizerApplyPage() {
       {isPending && !isEditing && (
         <div className="rounded-2xl bg-gradient-to-br from-amber-950/40 via-[#0e111a] to-zinc-950 border border-amber-500/40 p-6 sm:p-8 space-y-6">
           <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0">
-              <Clock className="h-8 w-8 animate-pulse" />
+            <div className="h-16 w-16 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0 overflow-hidden">
+              {existingProfile.logo ? (
+                <img
+                  src={existingProfile.logo}
+                  alt={existingProfile.organizationName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Clock className="h-8 w-8 animate-pulse" />
+              )}
             </div>
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
@@ -325,8 +394,16 @@ export default function OrganizerApplyPage() {
       {isRejected && !isEditing && (
         <div className="rounded-2xl bg-gradient-to-br from-red-950/40 via-[#0e111a] to-zinc-950 border border-red-500/50 p-6 sm:p-8 space-y-5">
           <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-400 flex items-center justify-center shrink-0">
-              <AlertTriangle className="h-8 w-8" />
+            <div className="h-16 w-16 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-400 flex items-center justify-center shrink-0 overflow-hidden">
+              {existingProfile.logo ? (
+                <img
+                  src={existingProfile.logo}
+                  alt={existingProfile.organizationName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <AlertTriangle className="h-8 w-8" />
+              )}
             </div>
             <div>
               <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded bg-red-600 text-black">
@@ -380,6 +457,67 @@ export default function OrganizerApplyPage() {
                 Cancel Editing
               </button>
             )}
+          </div>
+
+          {/* Clan Logo Upload */}
+          <div className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="relative group shrink-0">
+                <div className="h-16 w-16 rounded-xl bg-gradient-to-tr from-violet-600 to-lime-400 p-[2px] shadow-md">
+                  <div className="w-full h-full rounded-[10px] bg-zinc-950 flex items-center justify-center overflow-hidden">
+                    {logo ? (
+                      <img
+                        src={logo}
+                        alt="Organization Logo"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <ShieldCheck className="h-7 w-7 text-zinc-500" />
+                    )}
+                  </div>
+                </div>
+                {logo && (
+                  <button
+                    type="button"
+                    onClick={() => setLogo("")}
+                    title="Remove logo"
+                    className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-red-600 text-white flex items-center justify-center text-xs shadow-md hover:bg-red-500 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-white">
+                  Organization / Clan Logo
+                </label>
+                <p className="text-[11px] text-zinc-400 mt-0.5">
+                  Featured on tournament cards, match lobbies, and host credentials.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                ref={logoInputRef}
+                onChange={handleLogoUpload}
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                isLoading={isUploadingLogo}
+                onClick={() => logoInputRef.current?.click()}
+                className="text-xs border-violet-500/30 hover:border-lime-500/50"
+              >
+                <Upload className="h-3.5 w-3.5 mr-1.5 text-lime-400" />
+                {logo ? "Change Clan Logo" : "Upload Logo"}
+              </Button>
+            </div>
           </div>
 
           {/* Org Name */}

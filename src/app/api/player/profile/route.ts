@@ -10,16 +10,25 @@ export async function PATCH(req: NextRequest) {
 
     await connectToDatabase();
 
+    const { User } = await import("@/lib/db/models/User");
+
+    const updateData: Record<string, unknown> = {
+      gamerTag: body.gamerTag,
+      freeFireId: body.freeFireId,
+      bgmiId: body.bgmiId,
+      bio: body.bio,
+      phone: body.phone,
+      discordHandle: body.discordHandle,
+    };
+
+    if (typeof body.avatar === "string") {
+      updateData.avatar = body.avatar;
+      await User.findByIdAndUpdate(session.id, { avatar: body.avatar });
+    }
+
     const profile = await PlayerProfile.findOneAndUpdate(
       { userId: session.id },
-      {
-        gamerTag: body.gamerTag,
-        freeFireId: body.freeFireId,
-        bgmiId: body.bgmiId,
-        bio: body.bio,
-        phone: body.phone,
-        discordHandle: body.discordHandle,
-      },
+      updateData,
       { new: true, upsert: true }
     );
 

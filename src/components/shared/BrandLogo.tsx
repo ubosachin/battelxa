@@ -42,16 +42,16 @@ export function BrandLogo({
   const content = (
     <div className="flex items-center gap-2.5 sm:gap-3 select-none group">
       {useImage ? (
-        <div className="relative flex items-center justify-center shrink-0 rounded-2xl overflow-hidden border border-lime-500/40 shadow-lg shadow-lime-950/40 group-hover:border-lime-400 group-hover:scale-105 transition-all duration-300">
+        <div className="relative flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300">
           <Image
-            src="/logo-icon.png"
-            alt="BATTLEXA"
+            src="/brand/battlexa-emblem.png?v=3"
+            alt="BATTLEXA Emblem"
             width={imageDimensions[size]}
             height={imageDimensions[size]}
-            className="object-cover"
+            className="object-contain filter drop-shadow-[0_0_12px_rgba(163,230,53,0.4)] group-hover:drop-shadow-[0_0_20px_rgba(163,230,53,0.7)] transition-all"
             priority
+            unoptimized
           />
-          <div className="absolute inset-0 bg-lime-400/10 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       ) : (
         <div className="relative flex items-center justify-center p-2 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-800 text-white shadow-lg shadow-violet-900/40 border border-violet-400/30 group-hover:scale-105 transition-transform duration-300">
@@ -61,11 +61,15 @@ export function BrandLogo({
       )}
       <div className="flex flex-col">
         <div className="flex items-center tracking-tight font-black leading-none">
-          <span className={cn(sizeClasses[size], "text-white")}>BATTLE</span>
-          <span className={cn(sizeClasses[size], "text-lime-400")}>XA</span>
+          <span className={cn(sizeClasses[size], "text-white transition-colors")}>
+            BATTLE
+          </span>
+          <span className={cn(sizeClasses[size], "text-lime-400 drop-shadow-[0_0_12px_rgba(163,230,53,0.5)]")}>
+            XA
+          </span>
         </div>
         {showTagline && (
-          <span className="text-[10px] uppercase font-bold tracking-widest text-violet-400 mt-0.5">
+          <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400 mt-1">
             Free Fire MAX & BGMI Arena
           </span>
         )}

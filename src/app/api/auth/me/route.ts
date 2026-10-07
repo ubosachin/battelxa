@@ -43,7 +43,7 @@ export async function GET() {
     const isOnboarded = userDoc.isOnboarded !== false;
 
     // If role, username, or avatar changed in MongoDB, refresh the JWT cookie automatically!
-    if (session.role !== currentRole || session.username !== userDoc.username) {
+    if (session.role !== currentRole || session.username !== userDoc.username || session.avatar !== userDoc.avatar) {
       await setSessionCookie({
         ...session,
         role: currentRole,
@@ -81,6 +81,8 @@ export async function GET() {
               _id: organizer._id,
               organizationName: organizer.organizationName,
               description: organizer.description,
+              logo: organizer.logo || "",
+              banner: organizer.banner || "",
               phone: organizer.phone,
               website: organizer.website,
               upiId: organizer.upiId,

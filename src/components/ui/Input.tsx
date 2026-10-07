@@ -18,14 +18,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-xs font-semibold uppercase tracking-wider text-zinc-300"
+            className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-zinc-300"
           >
             {label}
           </label>
         )}
         <div className="relative">
           {leftIcon && (
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-zinc-400">
               {leftIcon}
             </div>
           )}
@@ -34,7 +34,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             type={type}
             ref={ref}
             className={cn(
-              "w-full rounded-lg bg-zinc-900/80 border border-zinc-800 px-3.5 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 transition-all duration-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50",
+              "w-full rounded-lg bg-white dark:bg-zinc-900/80 border border-slate-300 dark:border-zinc-800 px-3.5 py-2.5 text-sm text-slate-900 dark:text-zinc-100 placeholder-slate-400 dark:placeholder-zinc-500 transition-all duration-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/50 shadow-sm dark:shadow-none",
               leftIcon && "pl-10",
               error && "border-red-500/80 focus:border-red-500 focus:ring-red-500/30",
               className
@@ -42,9 +42,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
         </div>
-        {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+        {error && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{error}</p>}
         {helperText && !error && (
-          <p className="text-xs text-zinc-500 mt-1">{helperText}</p>
+          <p className="text-xs text-slate-500 dark:text-zinc-500 mt-1">{helperText}</p>
         )}
       </div>
     );

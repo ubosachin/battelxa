@@ -15,17 +15,17 @@ export function Card({
 }: CardProps) {
   const glowStyles = {
     none: "",
-    violet: "border-violet-500/30 shadow-lg shadow-violet-950/30",
-    lime: "border-lime-500/30 shadow-lg shadow-lime-950/20",
+    violet: "border-violet-500/30 shadow-lg shadow-violet-950/10 dark:shadow-violet-950/30",
+    lime: "border-lime-500/30 shadow-lg shadow-lime-950/10 dark:shadow-lime-950/20",
   };
 
   return (
     <div
       className={cn(
-        "rounded-xl bg-[#0e111a]/80 backdrop-blur-md border border-white/[0.07] p-5 text-zinc-100",
+        "rounded-xl bg-white dark:bg-[#0e111a]/80 backdrop-blur-md border border-slate-200 dark:border-white/[0.07] p-5 text-slate-800 dark:text-zinc-100 shadow-sm dark:shadow-none",
         glowStyles[glow],
         hoverEffect &&
-          "transition-all duration-300 hover:border-violet-500/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-950/20",
+          "transition-all duration-300 hover:border-violet-500/40 hover:-translate-y-1 hover:shadow-xl hover:shadow-violet-950/10 dark:hover:shadow-violet-950/20",
         className
       )}
       {...props}
@@ -55,7 +55,7 @@ export function CardTitle({
   return (
     <h3
       className={cn(
-        "text-lg font-bold tracking-tight text-white flex items-center justify-between",
+        "text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center justify-between",
         className
       )}
       {...props}
@@ -71,7 +71,7 @@ export function CardDescription({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-xs text-zinc-400 leading-relaxed", className)} {...props}>
+    <p className={cn("text-xs text-slate-500 dark:text-zinc-400 leading-relaxed", className)} {...props}>
       {children}
     </p>
   );

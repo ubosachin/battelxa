@@ -14,8 +14,8 @@ export function Footer() {
             <p className="text-xs text-zinc-400 leading-relaxed max-w-sm">
               BATTLEXA is the premier competitive esports arena for Free Fire MAX and BGMI warriors. Compete in daily cups, scrims, and national tournaments with verified organizers and guaranteed prize pools.
             </p>
-            <div className="flex items-center gap-2 text-xs text-lime-400 font-semibold bg-lime-950/30 border border-lime-800/30 px-3 py-1.5 rounded-lg w-fit">
-              <ShieldCheck className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-xs text-lime-400 bg-lime-950/30 border border-lime-800/30 px-3 py-1.5 rounded-lg w-fit font-semibold">
+              <ShieldCheck className="h-4 w-4 text-lime-400" />
               100% Skill-Based Esports Platform • No Gambling
             </div>
           </div>
@@ -124,7 +124,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-8 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500">
+        <div className="mt-12 pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500">
           <div className="space-y-1 text-center sm:text-left">
             <p>© {new Date().getFullYear()} BATTLEXA Esports Arena. All rights reserved.</p>
             <p className="text-[10px] text-zinc-600">
