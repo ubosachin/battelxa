@@ -216,7 +216,7 @@ export default function TournamentMatchRoomPage({
 
             {/* User Slot Callout Card if Registered */}
             {userSlotNumber && (
-              <div className="p-5 rounded-2xl bg-zinc-900/90 border-2 border-lime-400/80 shadow-[0_0_30px_rgba(132,204,22,0.2)] text-center shrink-0 min-w-[200px]">
+              <div className="w-full sm:w-auto sm:min-w-[200px] p-5 rounded-2xl bg-zinc-900/90 border-2 border-lime-400/80 shadow-[0_0_30px_rgba(132,204,22,0.2)] text-center shrink-0">
                 <span className="text-[10px] font-black uppercase text-lime-400 tracking-wider block mb-1">
                   Your In-Game Seat
                 </span>

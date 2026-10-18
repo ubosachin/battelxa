@@ -153,7 +153,7 @@ export default function AdminPayoutsPage() {
                   Beneficiary: <strong className="text-white">{p.userId?.username || "Warrior"}</strong> (
                   {p.userId?.email || "N/A"})
                 </div>
-                <div className="text-xs text-zinc-400 font-mono bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 w-fit">
+                <div className="text-xs text-zinc-400 font-mono bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800 w-fit max-w-full break-all">
                   {p.payoutMethod === "UPI"
                     ? `UPI VPA: ${p.payoutDetails?.upiId || "N/A"}`
                     : `A/C: ${p.payoutDetails?.accountNumber} | IFSC: ${p.payoutDetails?.ifscCode} | Name: ${p.payoutDetails?.accountHolderName}`}

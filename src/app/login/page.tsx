@@ -214,7 +214,7 @@ function LoginFormContent() {
 
       {/* Unified Responsive Container */}
       <div className="w-full max-w-[440px] relative z-10 space-y-4">
-        <div className="rounded-2xl bg-[#0e111a]/95 backdrop-blur-xl border border-white/[0.1] p-5 sm:p-7 shadow-2xl shadow-black/90 space-y-5 relative overflow-hidden">
+        <div className="rounded-2xl bg-[#0e111a]/95 backdrop-blur-xl border border-white/[0.1] p-4 sm:p-7 shadow-2xl shadow-black/90 space-y-5 relative overflow-hidden">
           {/* Top highlight bar */}
           <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-violet-600 via-lime-400 to-[#5865F2]" />
 

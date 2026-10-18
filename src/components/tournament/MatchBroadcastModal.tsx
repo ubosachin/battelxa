@@ -147,10 +147,10 @@ export function MatchBroadcastModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div className="relative w-full max-w-2xl my-8 rounded-2xl bg-[#0b0f19] border border-emerald-500/30 shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-gradient-to-r from-emerald-950/40 via-zinc-900/60 to-zinc-900/40">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/[0.08] bg-gradient-to-r from-emerald-950/40 via-zinc-900/60 to-zinc-900/40">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
               <Send className="w-5 h-5" />
@@ -176,11 +176,11 @@ export function MatchBroadcastModal({
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex border-b border-white/[0.08] bg-zinc-950/50 px-6 gap-2 pt-2">
+        <div className="flex border-b border-white/[0.08] bg-zinc-950/50 px-4 sm:px-6 gap-2 pt-2 overflow-x-auto no-scrollbar">
           <button
             type="button"
             onClick={() => setActiveTab("CONFIG")}
-            className={`pb-2 px-3 text-xs font-bold border-b-2 transition-colors ${
+            className={`pb-2 px-3 text-xs font-bold border-b-2 transition-colors whitespace-nowrap shrink-0 ${
               activeTab === "CONFIG"
                 ? "border-emerald-400 text-emerald-400"
                 : "border-transparent text-zinc-400 hover:text-zinc-200"
@@ -191,7 +191,7 @@ export function MatchBroadcastModal({
           <button
             type="button"
             onClick={() => setActiveTab("PREVIEW_DISCORD")}
-            className={`pb-2 px-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-2 px-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
               activeTab === "PREVIEW_DISCORD"
                 ? "border-[#5865F2] text-[#5865F2]"
                 : "border-transparent text-zinc-400 hover:text-zinc-200"
@@ -203,7 +203,7 @@ export function MatchBroadcastModal({
           <button
             type="button"
             onClick={() => setActiveTab("PREVIEW_EMAIL")}
-            className={`pb-2 px-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 ${
+            className={`pb-2 px-3 text-xs font-bold border-b-2 transition-colors flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
               activeTab === "PREVIEW_EMAIL"
                 ? "border-emerald-400 text-emerald-400"
                 : "border-transparent text-zinc-400 hover:text-zinc-200"
@@ -215,7 +215,7 @@ export function MatchBroadcastModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
           {resultSummary ? (
             <div className="p-6 rounded-2xl bg-emerald-950/20 border border-emerald-500/30 text-center space-y-4">
               <div className="w-12 h-12 mx-auto rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">

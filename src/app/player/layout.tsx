@@ -58,19 +58,19 @@ export default function PlayerLayout({
   }
 
   const links = [
-    { label: "Overview", href: "/player/dashboard", icon: LayoutDashboard },
-    { label: "My Tournaments", href: "/player/tournaments", icon: Trophy },
-    { label: "My Squads", href: "/player/teams", icon: Users },
-    { label: "Wallet & Payouts", href: "/player/wallet", icon: Wallet },
-    { label: "Gamer Profile", href: "/player/profile", icon: User },
-    { label: "Notifications", href: "/player/notifications", icon: Bell },
-    { label: "Disputes & Support", href: "/player/support", icon: HelpCircle },
+    { label: "Overview", shortLabel: "Overview", href: "/player/dashboard", icon: LayoutDashboard },
+    { label: "My Tournaments", shortLabel: "Matches", href: "/player/tournaments", icon: Trophy },
+    { label: "My Squads", shortLabel: "Squads", href: "/player/teams", icon: Users },
+    { label: "Wallet & Payouts", shortLabel: "Wallet", href: "/player/wallet", icon: Wallet },
+    { label: "Gamer Profile", shortLabel: "Profile", href: "/player/profile", icon: User },
+    { label: "Notifications", shortLabel: "Alerts", href: "/player/notifications", icon: Bell },
+    { label: "Disputes & Support", shortLabel: "Support", href: "/player/support", icon: HelpCircle },
   ];
 
   return (
     <div className="min-h-screen bg-[#08090e] flex flex-col md:flex-row">
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 bg-[#0c0f18] border-r border-zinc-800/80 p-4 space-y-6 shrink-0">
+      {/* Desktop Sidebar (Sticky, Left) */}
+      <aside className="hidden md:flex flex-col w-64 bg-[#0c0f18] border-r border-zinc-800/80 p-4 space-y-6 shrink-0 md:sticky md:top-20 md:h-[calc(100vh-5rem)] overflow-y-auto">
         <div className="px-3 pt-2">
           <span className="text-[10px] font-black uppercase tracking-widest text-lime-400">
             Player HQ
@@ -92,16 +92,40 @@ export default function PlayerLayout({
                     : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                {link.label}
+                <Icon className="h-4 w-4 shrink-0" />
+                <span>{link.label}</span>
               </Link>
             );
           })}
         </nav>
       </aside>
 
+      {/* Mobile Sticky Sub-Navbar (Horizontal scrolling pills, 48px height) */}
+      <div className="md:hidden sticky top-16 z-30 w-full bg-[#0c0f18]/95 backdrop-blur-xl border-b border-zinc-800 shadow-md">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-2">
+          {links.map((link) => {
+            const Icon = link.icon;
+            const isActive = pathname === link.href;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 active:scale-95 ${
+                  isActive
+                    ? "bg-violet-600 text-white shadow-[0_0_12px_rgba(139,92,246,0.5)] border border-violet-500"
+                    : "bg-zinc-900/90 text-zinc-400 hover:text-white border border-white/5 hover:bg-zinc-800"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{link.shortLabel}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Main Content Area */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto flex flex-col">
+      <main className="flex-1 p-3.5 sm:p-6 lg:p-8 overflow-y-auto pb-[calc(6rem+env(safe-area-inset-bottom,0px))] md:pb-8 flex flex-col">
         {!isOnboarded && !bannerDismissed && (
           <div className="max-w-6xl mx-auto w-full mb-6 p-4 rounded-2xl bg-gradient-to-r from-lime-950/70 via-zinc-900 to-violet-950/50 border border-lime-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-300">
             <div className="flex items-center gap-3">

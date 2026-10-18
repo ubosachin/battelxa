@@ -423,7 +423,7 @@ export default function AdminUsersPage() {
           <span className="text-[10px] font-bold text-red-400 uppercase">Master Admins</span>
           <div className="text-2xl font-black text-red-400 mt-1">{stats.totalAdmins}</div>
         </div>
-        <div className="p-4 rounded-xl bg-[#0e111a] border border-white/[0.08]">
+        <div className="col-span-2 sm:col-span-1 p-4 rounded-xl bg-[#0e111a] border border-white/[0.08]">
           <span className="text-[10px] font-bold text-zinc-500 uppercase">Banned Accounts</span>
           <div className="text-2xl font-black text-zinc-400 mt-1">{stats.totalBanned}</div>
         </div>

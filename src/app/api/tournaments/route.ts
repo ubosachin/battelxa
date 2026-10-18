@@ -73,14 +73,14 @@ export async function GET(req: NextRequest) {
     const orgProfileMap = new Map(orgProfiles.map((p) => [p.userId.toString(), p]));
 
     const formatted = tournaments.map((t) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const orgUserId = (t.organizerId as any)?._id?.toString() || t.organizerId?.toString() || "";
+      const host = t.organizerId as unknown as { _id?: { toString(): string }; username?: string; avatar?: string } | null;
+      const orgUserId = host?._id?.toString() || (typeof t.organizerId === "string" ? t.organizerId : "");
       const orgProf = orgProfileMap.get(orgUserId);
 
       return {
         ...t,
-        organizerName: orgProf?.organizationName || (t.organizerId as any)?.username || "BATTLEXA Host",
-        organizerLogo: orgProf?.logo || (t.organizerId as any)?.avatar || "",
+        organizerName: orgProf?.organizationName || host?.username || "BATTLEXA Host",
+        organizerLogo: orgProf?.logo || host?.avatar || "",
         roomCredentials: {
           releaseTime: t.roomCredentials?.releaseTime,
           released: t.roomCredentials?.released,

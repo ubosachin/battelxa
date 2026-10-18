@@ -5,7 +5,7 @@ import { ShieldCheck, Heart } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-white/[0.08] bg-[#06070a] text-zinc-400 py-12 lg:py-16">
+    <footer className="w-full border-t border-white/[0.08] bg-[#06070a] text-zinc-400 pt-12 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand Info */}

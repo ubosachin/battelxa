@@ -646,7 +646,7 @@ export function Navbar() {
                   { label: "Tournaments", href: "/admin/tournaments", icon: Trophy },
                   { label: "Disputes", href: "/admin/disputes", icon: Scale },
                   { label: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
-                ].map((item) => {
+                ].map((item, idx) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
                   return (
@@ -656,6 +656,7 @@ export function Navbar() {
                       onClick={() => setIsOpen(false)}
                       className={cn(
                         "flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all",
+                        idx === 6 && "col-span-2",
                         isActive
                           ? "bg-red-600 text-white shadow-md shadow-red-950/40"
                           : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-transparent"
@@ -721,7 +722,7 @@ export function Navbar() {
                   { label: "Wallet Ledger", href: "/player/wallet", icon: Wallet },
                   { label: "My Profile", href: "/player/profile", icon: User },
                   { label: "Apply Host", href: "/organizer/apply", icon: PlusCircle },
-                ].map((item) => {
+                ].map((item, idx) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
                   return (
@@ -731,6 +732,7 @@ export function Navbar() {
                       onClick={() => setIsOpen(false)}
                       className={cn(
                         "flex items-center gap-2 p-2 rounded-xl text-xs font-bold transition-all",
+                        idx === 4 && "col-span-2",
                         isActive
                           ? "bg-lime-500 text-black shadow-md shadow-lime-950/40"
                           : "text-zinc-300 hover:text-white bg-zinc-900/80 hover:bg-zinc-800 border border-transparent"

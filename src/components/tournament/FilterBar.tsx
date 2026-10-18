@@ -186,7 +186,7 @@ export function FilterBar({ filters, onChange, onReset }: FilterBarProps) {
         </div>
 
         {/* Sort Filter */}
-        <div>
+        <div className="col-span-2 sm:col-span-1">
           <label className="block text-[11px] font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider mb-1">
             Sort By
           </label>
@@ -203,7 +203,7 @@ export function FilterBar({ filters, onChange, onReset }: FilterBarProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800/80">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 border-t border-slate-200 dark:border-zinc-800/80">
         <span className="text-xs text-slate-500 dark:text-zinc-400">
           Showing real-time matches & verified organizers
         </span>

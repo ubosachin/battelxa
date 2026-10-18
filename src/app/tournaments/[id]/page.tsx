@@ -518,7 +518,7 @@ export default function TournamentDetailPage({
       </Modal>
 
       {/* Mobile Sticky Quick Join Bar */}
-      <div className="md:hidden fixed bottom-14 inset-x-0 z-30 bg-[#0c0f18]/95 backdrop-blur-xl border-t border-white/10 p-3 shadow-2xl flex items-center justify-between gap-3">
+      <div className="md:hidden fixed bottom-[calc(3.5rem+env(safe-area-inset-bottom,0.5rem))] inset-x-0 z-30 bg-[#0c0f18]/95 backdrop-blur-xl border-t border-white/10 p-3 shadow-2xl flex items-center justify-between gap-3">
         <div>
           <span className="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider">
             {isFree ? "Free Entry" : `₹${tournament.entryFee} Entry`}

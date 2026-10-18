@@ -63,10 +63,11 @@ export async function GET(
       (session.id === tournament.organizerId?._id?.toString() ||
         session.role === "ADMIN");
 
+    const host = tournament.organizerId as unknown as { username?: string; avatar?: string } | null;
     const sanitizedTournament = {
       ...tournament,
-      organizerName: orgProfile?.organizationName || (tournament.organizerId as any)?.username || "BATTLEXA Host",
-      organizerLogo: orgProfile?.logo || (tournament.organizerId as any)?.avatar || "",
+      organizerName: orgProfile?.organizationName || host?.username || "BATTLEXA Host",
+      organizerLogo: orgProfile?.logo || host?.avatar || "",
       organizerWebsite: orgProfile?.website || "",
       roomCredentials: {
         releaseTime: tournament.roomCredentials?.releaseTime,

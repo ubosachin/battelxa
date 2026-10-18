@@ -445,63 +445,63 @@ export default async function HomePage() {
           </div>
 
           {/* Quick Stats Metrics Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-7xl mx-auto text-left">
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 max-w-7xl mx-auto text-left">
+            <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between text-lime-600 dark:text-lime-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                   Total Prize Pool
                 </span>
-                <Trophy className="h-4 w-4" />
+                <Trophy className="h-4 w-4 shrink-0" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white truncate">
                 {totalPrizePool > 0 ? formatCurrency(totalPrizePool) : "₹0"}
               </div>
-              <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1">
+              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-zinc-500 mt-1 truncate">
                 {totalPrizePool > 0 ? "Active tournament pools" : "Upcoming tournament pools"}
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
+            <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between text-violet-600 dark:text-violet-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                   Active Contenders
                 </span>
-                <Users className="h-4 w-4" />
+                <Users className="h-4 w-4 shrink-0" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white truncate">
                 {totalUsers.toLocaleString("en-IN")}
               </div>
-              <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1">
+              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-zinc-500 mt-1 truncate">
                 Verified Indian warriors
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
+            <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between text-cyan-600 dark:text-cyan-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                   Matches Hosted
                 </span>
-                <Gamepad2 className="h-4 w-4" />
+                <Gamepad2 className="h-4 w-4 shrink-0" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white truncate">
                 {totalCount}
               </div>
-              <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1">
+              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-zinc-500 mt-1 truncate">
                 Competitive scrims & cups
               </div>
             </div>
 
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
+            <div className="p-3.5 sm:p-5 rounded-2xl bg-white dark:bg-[#0e111a] border border-slate-200 dark:border-white/[0.08] shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                   Payout Speed
                 </span>
-                <ShieldCheck className="h-4 w-4" />
+                <ShieldCheck className="h-4 w-4 shrink-0" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+              <div className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white truncate">
                 Instant UPI
               </div>
-              <div className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1">
+              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-zinc-500 mt-1 truncate">
                 Automated wallet settlements
               </div>
             </div>

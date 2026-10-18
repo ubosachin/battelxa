@@ -180,8 +180,8 @@ export default function AdminOrganizersPage() {
       const newStatus = status.toLowerCase() as "pending" | "approved" | "rejected";
 
       const updated = { ...prev };
-      if (oldStatus in updated) (updated as any)[oldStatus] = Math.max(0, (updated as any)[oldStatus] - 1);
-      if (newStatus in updated) (updated as any)[newStatus] = ((updated as any)[newStatus] || 0) + 1;
+      if (oldStatus in updated) updated[oldStatus] = Math.max(0, updated[oldStatus] - 1);
+      if (newStatus in updated) updated[newStatus] = (updated[newStatus] || 0) + 1;
       return updated;
     });
 
@@ -443,7 +443,7 @@ export default function AdminOrganizersPage() {
                   </div>
 
                   {/* Creator Info Box */}
-                  <div className="shrink-0 p-3.5 rounded-xl bg-black/40 border border-zinc-800 text-xs space-y-1 min-w-[220px]">
+                  <div className="w-full sm:w-auto sm:min-w-[220px] shrink-0 p-3.5 rounded-xl bg-black/40 border border-zinc-800 text-xs space-y-1">
                     <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest flex items-center gap-1.5">
                       <User className="h-3 w-3 text-red-400" /> Applicant User
                     </div>

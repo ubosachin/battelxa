@@ -193,7 +193,7 @@ export default function CreateTournamentPage() {
         </div>
 
         {/* Entry Type, Entry Fee, Prize Pool, Max Slots */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300">
               Entry Type
