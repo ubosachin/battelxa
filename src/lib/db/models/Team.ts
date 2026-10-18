@@ -15,6 +15,8 @@ export interface ITeam extends Document {
   game: "FREE_FIRE_MAX" | "BGMI";
   members: ITeamMember[];
   logo?: string;
+  bio?: string;
+  isOpenRecruiting?: boolean;
   joinCode: string;
   matchesPlayed: number;
   matchesWon: number;
@@ -63,7 +65,17 @@ const TeamSchema = new Schema<ITeam>(
     members: [TeamMemberSchema],
     logo: {
       type: String,
+      default: "dragon",
+    },
+    bio: {
+      type: String,
       default: "",
+      maxlength: 200,
+    },
+    isOpenRecruiting: {
+      type: Boolean,
+      default: true,
+      index: true,
     },
     joinCode: {
       type: String,

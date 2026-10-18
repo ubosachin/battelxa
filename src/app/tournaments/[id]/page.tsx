@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   HelpCircle,
   Gamepad2,
+  ExternalLink,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { GameLogo } from "@/components/shared/GameLogo";
@@ -95,6 +96,8 @@ export default function TournamentDetailPage({
   const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false);
   const [inGameId, setInGameId] = useState<string>("");
   const [inGameName, setInGameName] = useState<string>("");
+  const [userTeams, setUserTeams] = useState<Array<{ _id: string; name: string; tag: string; game: string; members: Array<{ inGameName: string; inGameId: string }> }>>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("");
   const [isJoining, setIsJoining] = useState<boolean>(false);
   const [joinError, setJoinError] = useState<string>("");
   const [joinSuccess, setJoinSuccess] = useState<string>("");
@@ -112,6 +115,17 @@ export default function TournamentDetailPage({
           setRegistrations(data.registrations || []);
           setIsRegistered(data.isUserRegistered);
           setUserSlotNumber(data.userSlotNumber);
+        }
+
+        // Fetch user's registered squads
+        try {
+          const teamsRes = await fetch("/api/teams?scope=my");
+          if (isMounted && teamsRes.ok) {
+            const teamsData = await teamsRes.json();
+            setUserTeams(teamsData.teams || []);
+          }
+        } catch {
+          // Non-blocking if unauthenticated
         }
       } catch (e) {
         console.error(e);
@@ -146,6 +160,7 @@ export default function TournamentDetailPage({
           inGameId: inGameId.trim(),
           inGameName: inGameName.trim() || undefined,
           registrationType: tournament?.format || "SOLO",
+          teamId: selectedTeamId || undefined,
         }),
       });
 
@@ -467,6 +482,71 @@ export default function TournamentDetailPage({
         <form onSubmit={handleRegister} className="space-y-4">
           {joinError && <Alert variant="error">{joinError}</Alert>}
           {joinSuccess && <Alert variant="success">{joinSuccess}</Alert>}
+
+          {/* Squad Selection for Duo / Squad Tournaments */}
+          {tournament.format !== "SOLO" && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                  Select Enlisted Squad ({tournament.format})
+                </label>
+                <Link
+                  href="/player/teams"
+                  target="_blank"
+                  className="text-[11px] text-lime-400 hover:underline flex items-center gap-1 font-semibold"
+                >
+                  Manage Squads <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+
+              {(() => {
+                const targetGame = tournament.gameSlug === "free-fire-max" ? "FREE_FIRE_MAX" : "BGMI";
+                const matchingTeams = userTeams.filter((t) => t.game === targetGame);
+
+                if (matchingTeams.length === 0) {
+                  return (
+                    <div className="p-3 rounded-xl bg-violet-950/30 border border-violet-500/30 text-xs text-violet-300 flex items-center justify-between">
+                      <span>No {isFF ? "Free Fire MAX" : "BGMI"} squad enlisted yet.</span>
+                      <Link
+                        href="/player/teams"
+                        className="font-bold underline text-lime-400 shrink-0 ml-2"
+                      >
+                        Assemble Clan
+                      </Link>
+                    </div>
+                  );
+                }
+
+                return (
+                  <select
+                    value={selectedTeamId}
+                    onChange={(e) => {
+                      const tid = e.target.value;
+                      setSelectedTeamId(tid);
+                      const selected = matchingTeams.find((t) => t._id === tid);
+                      if (selected && selected.members.length > 0) {
+                        const firstMember = selected.members[0];
+                        if (firstMember.inGameId && firstMember.inGameId !== "ID_PENDING") {
+                          setInGameId(firstMember.inGameId);
+                        }
+                        if (firstMember.inGameName) {
+                          setInGameName(firstMember.inGameName);
+                        }
+                      }
+                    }}
+                    className="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-sm text-zinc-100 focus:outline-none focus:border-violet-500 font-medium"
+                  >
+                    <option value="">Register as Independent / Ad-Hoc</option>
+                    {matchingTeams.map((team) => (
+                      <option key={team._id} value={team._id}>
+                        [{team.tag}] {team.name} ({team.members.length}/5 Players)
+                      </option>
+                    ))}
+                  </select>
+                );
+              })()}
+            </div>
+          )}
 
           <Input
             label={isFF ? "Free Fire UID (Character ID)" : "BGMI Character ID"}
